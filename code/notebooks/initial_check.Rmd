@@ -1,0 +1,76 @@
+---
+title: "Initial check of data"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(broom)
+```
+
+
+
+```{r}
+train = read_csv("../../data/train.csv") %>% 
+  select(-id)
+test = read_csv("../../data/test.csv")
+```
+
+How many positives and negatives?
+
+```{r}
+x = table(train$target)
+n_neg = x[["0"]]
+n_pos = x[["1"]]
+x
+```
+
+Very unbalanced.
+
+What variables?
+
+```{r}
+names(train)
+```
+
+Have a look at how some variables relate to the outcome variable.
+
+```{r}
+train %>% 
+  sample_n(200) %>% 
+  gather(key = var, value = val, -target) %>%
+  filter(var %in% c("ps_ind_01", "ps_car_01_cat", "ps_calc_15_bin")) %>% 
+  ggplot(aes(x = val, y = target)) +
+  facet_grid(~ var) +
+  geom_point()
+```
+
+Try upsampling.
+
+```{r}
+train_upsampled = train %>% 
+  filter(target == 1) %>% 
+  sample_n(n_neg, replace = TRUE) %>% # Sample the same number of positives as there are negatives. 
+  bind_rows(train %>% filter(target == 0)) 
+table(train_upsampled$target)
+```
+To get started, fit a logistic regression on upsampled data and predict for training data. (Will perform poorly.)
+```{r}
+logistic_regression_predictions = glm(target ~ ., 
+                                      family = binomial(link = "logit"), 
+                                      data = train_upsampled) %>% 
+  augment(newdata = train)
+```
+Plot predictions vs ground truth.
+```{r}
+logistic_regression_predictions %>% ggplot(aes(x = target, y = psych::logistic(.fitted))) +
+  geom_point()
+```
+Doesn't look good. How about ROC?
+
+```{r}
+logistic_regression_predictions %>% 
+  transmute(p = psych::logistic(.fitted)) %>% 
+  caTools::colAUC(y = logistic_regression_predictions$target, plotROC = TRUE)
+```
+Also looks pretty terrible.
