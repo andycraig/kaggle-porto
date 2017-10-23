@@ -1,0 +1,14 @@
+train_set_clean: ../data/train/train_labels.csv.bak
+train_set: ../data/train/train_labels.csv
+test_set: ../sample_submission.csv
+train_imgs: ../data/train/img/
+test_imgs: ../data/test/img/
+train_features_nn: ../data/train/train_nn.pickle
+test_features_nn: ../data/test/test_nn.pickle
+train_features_gbt: ../data/train/train_features.csv
+test_features_gbt: ../data/test/test_features.csv
+submit_prefix: ../submit
+hyperparams_file: hyperparams.yaml
+n_models: 3
+n_folds: 5
+n_bagging_estimators: 8
