@@ -12,3 +12,5 @@ train %>%
   # fold: close-to-equal numbers of each fold, in random order.
   mutate(fold = rep_len(seq(1, n_folds), n_rows) %>% sample(n_rows, replace = FALSE)) %>% 
   write_csv("../generated-files/train.csv")
+
+file.copy("../data/test.csv", "../generated-files/test.csv")

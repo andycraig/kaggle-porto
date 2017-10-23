@@ -14,10 +14,6 @@ import xgboost as xgb
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
-img_x = 128
-img_y = 128
-n_channels = 3
-
 # Test classifier
 class TestClassifier(BaseEstimator, ClassifierMixin):
 
@@ -67,17 +63,6 @@ class NN(BaseEstimator, ClassifierMixin):
         # For CNN, we want an nx128x128x3 matrix.
         self.X_4Dmatrix = self.X_.reshape([-1, img_x, img_y, n_channels])
 
-        datagen = keras.preprocessing.image.ImageDataGenerator(
-            # featurewise_center = True,
-            rotation_range = 30,
-            width_shift_range = 0.2,
-            height_shift_range = 0.2,
-            # zca_whitening = True,
-            shear_range = 0.2,
-            zoom_range = 0.2,
-            horizontal_flip = True,
-            vertical_flip = True,
-            fill_mode = 'nearest')
         datagen.fit(self.X_4Dmatrix)
 
         self.model = get_model(self.extra_layer)
@@ -108,14 +93,18 @@ class NN(BaseEstimator, ClassifierMixin):
 # XGBoost classifier
 class XGBoost(BaseEstimator, ClassifierMixin):
 
-    def __init__(self, n_pca_components = 0, eval_metric="auc", min_child_weight=15, max_depth=4, gamma=1, scoring=None):
-        self.n_pca_components = n_pca_components
+    def __init__(self, 
+                 eval_metric="auc", 
+                 min_child_weight=15, 
+                 max_depth=4, 
+                 gamma=1,
+                 scoring=None):
         self.eval_metric = eval_metric
         self.min_child_weight = min_child_weight
         self.max_depth = max_depth
         self.gamma = gamma
-        # Ignore scoring parameter.
-
+        self.model, self.X_, self.y_, self.classes_ = None, None, None, None
+        
     def fit(self, X, y):
 
         # Check that X and y have correct shape
@@ -128,12 +117,8 @@ class XGBoost(BaseEstimator, ClassifierMixin):
         # Center and scale.
         self.scaler = StandardScaler().fit(self.X_)
         X_scaled = self.scaler.transform(self.X_)
-        # Add projections onto first n_pca_components principle components.
-        self.pca = PCA(self.n_pca_components)
-        # Use fit_transform here.
-        X_scaled_PCA = np.hstack([X_scaled, self.pca.fit_transform(X_scaled)])
         # Return the classifier
-        xgtrain = xgb.DMatrix(X_scaled_PCA, label=self.y_)
+        xgtrain = xgb.DMatrix(X_scaled, label=self.y_)
 
         params = {
             'eta': 0.05, #0.03
@@ -170,10 +155,6 @@ class XGBoost(BaseEstimator, ClassifierMixin):
 
         # Center and scale (same transformation as for train features).
         X_scaled = self.scaler.transform(X)
-        # Adding projections onto principle components.
-        # Use transform here, to use the same pinciple components from the train data.
-        X_scaled_PCA = np.hstack([X_scaled,
-                                self.pca.transform(X_scaled)])
         xgtest = xgb.DMatrix(X_scaled_PCA)
         predictions_class_1 = self.model.predict(xgtest,ntree_limit=self.model.best_ntree_limit)
         predictions_class_1_tranpose = predictions_class_1.reshape([-1, 1])

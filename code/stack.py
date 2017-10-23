@@ -2,13 +2,9 @@
 
 # -*- coding: utf-8 -*-
 
+import os, sys, yaml
 import pandas as pd
 import numpy as np
-import scipy
-import random
-import datetime
-import os, sys, yaml
-import sys
 from utils import datetime_for_filename
 from sklearn.linear_model import LogisticRegression
 
@@ -24,7 +20,7 @@ def main(config_file):
 
     # Fit stacking model predicting 'invasive' from model columns.
     # Model predictions are those in columns beginning with 'M'.
-    model_cols = [x for x in test_set.columns if x[0] == 'M']
+    model_cols = [x for x in test_set.columns if x[0:6] == 'model_']
     S = LogisticRegression()
     S.fit(X=train_set.loc[:,model_cols], y=train_labels)
     # Make predictions based on model columns of test set.
