@@ -81,12 +81,26 @@ class XGBoost(BaseEstimator, ClassifierMixin):
                  max_depth=4, 
                  gamma=1,
                  scoring=None):
-        self.eval_metric = eval_metric
-        self.min_child_weight = min_child_weight
-        self.max_depth = max_depth
-        self.gamma = gamma
+        self.params = {
+            'eta':0.05,
+            'silent':1,
+            'verbose_eval':True,
+            'verbose':False,
+            'seed':4,
+            'objective':'binary:logistic',
+            'eval_metric':eval_metric,
+            'min_child_weight':min_child_weight,
+            'cosample_bytree':0.8,
+            'cosample_bylevel':0.9,
+            'max_depth':max_depth,
+            'subsample':0.9,
+            'max_delta_step':10,
+            'gamma':gamma,
+            'alpha':0,
+            'lambda':1
+        }
         self.model, self.X_, self.y_, self.classes_ = None, None, None, None
-        
+
     def fit(self, X, y):
 
         # Check that X and y have correct shape
@@ -101,28 +115,12 @@ class XGBoost(BaseEstimator, ClassifierMixin):
         # Return the classifier
         xgtrain = xgb.DMatrix(X_scaled, label=self.y_)
 
-        params = {
-            'eta': 0.05, #0.03
-            'silent': 1,
-            'verbose_eval': True,
-            'verbose': False,
-            'seed': 4,
-            'objective':'binary:logistic',
-            'eval_metric':self.eval_metric,
-            'min_child_weight':self.min_child_weight,
-            'cosample_bytree':0.8,
-            'cosample_bylevel':0.9,
-            'max_depth':self.max_depth,
-            'subsample':0.9,
-            'max_delta_step':10,
-            'gamma':self.gamma,
-            'alpha':0,
-            'lambda':1
-        }
-
-        watchlist = [(xgtrain,'train')]
-        self.model = xgb.train(list(params.items()), xgtrain, 5000, watchlist,
-                        early_stopping_rounds=25, verbose_eval = 50)
+        self.model = xgb.train(params=self.params, 
+                               dtrain=xgtrain, 
+                               num_boost_round=5000, 
+                               evals=[(xgtrain,'train')],
+                               early_stopping_rounds=25, 
+                               verbose_eval = 50)
 
         return self
 
