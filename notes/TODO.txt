@@ -1,0 +1,10 @@
+Set up stacking. Need to stratify on pos/neg?
+
+Scaler needs to be consistent w.r.t. CV, stacking.
+
+Set up CV for stratifying.
+
+xgboost
+
+DNN?
+

@@ -27,17 +27,14 @@ class TestClassifier(BaseEstimator, ClassifierMixin):
         # Store the classes seen during fit
         self.classes_ = unique_labels(y)
 
-        self.X_ = X
-        self.y_ = y
+        self.X_, self.y_ = X, y
          # Return the classifier
         return self
 
     def predict(self, X):
 
-        # Check is fit had been called
-        check_is_fitted(self, ['X_', 'y_'])
-
         # Input validation
+        check_is_fitted(self, ['X_', 'y_'])
         X = check_array(X)
 
         closest = np.argmin(euclidean_distances(X, self.X_), axis=1)
@@ -57,31 +54,16 @@ class NN(BaseEstimator, ClassifierMixin):
         # Store the classes seen during fit.
         self.classes_ = unique_labels(y)
 
-        self.X_ = X
-        self.y_ = y
-        # self.X_ is an n x (128*128*3) matrices.
-        # For CNN, we want an nx128x128x3 matrix.
-        self.X_4Dmatrix = self.X_.reshape([-1, img_x, img_y, n_channels])
+        self.X_, self.y_ = X, y
+        
+        raise NotImplementedError("Haven't implemented NN model.")
 
-        datagen.fit(self.X_4Dmatrix)
-
-        self.model = get_model(self.extra_layer)
-
-        # Do the fit.
-        steps_per_epoch = len(self.X_) / self.batch_size
-        self.model.fit_generator(datagen.flow(self.X_4Dmatrix, self.y_, batch_size=self.batch_size),
-            steps_per_epoch=steps_per_epoch,
-            epochs=self.epochs,
-            verbose=2)
-        # Return the classifier
         return self
 
     def predict_proba(self, X):
 
-        # Check is fit had been called
-        check_is_fitted(self, ['X_', 'y_'])
-
         # Input validation
+        check_is_fitted(self, ['X_', 'y_'])
         X = check_array(X)
 
         # Convert X (list of matrices) to a matrix before sending to model.predict().
@@ -111,8 +93,7 @@ class XGBoost(BaseEstimator, ClassifierMixin):
         X, y = check_X_y(X, y)
         # Store the classes seen during fit
         self.classes_ = unique_labels(y)
-        self.X_ = X
-        self.y_ = y
+        self.X_, self.y_ = X, y
 
         # Center and scale.
         self.scaler = StandardScaler().fit(self.X_)
@@ -125,19 +106,19 @@ class XGBoost(BaseEstimator, ClassifierMixin):
             'silent': 1,
             'verbose_eval': True,
             'verbose': False,
-            'seed': 4
+            'seed': 4,
+            'objective':'binary:logistic',
+            'eval_metric':self.eval_metric,
+            'min_child_weight':self.min_child_weight,
+            'cosample_bytree':0.8,
+            'cosample_bylevel':0.9,
+            'max_depth':self.max_depth,
+            'subsample':0.9,
+            'max_delta_step':10,
+            'gamma':self.gamma,
+            'alpha':0,
+            'lambda':1
         }
-        params['objective'] = 'binary:logistic'
-        params['eval_metric'] = self.eval_metric
-        params['min_child_weight'] = self.min_child_weight
-        params['cosample_bytree'] = 0.8
-        params['cosample_bylevel'] = 0.9
-        params['max_depth'] = self.max_depth
-        params['subsample'] = 0.9
-        params['max_delta_step'] = 10
-        params['gamma'] = self.gamma
-        params['alpha'] = 0
-        params['lambda'] = 1
 
         watchlist = [(xgtrain,'train')]
         self.model = xgb.train(list(params.items()), xgtrain, 5000, watchlist,
@@ -147,10 +128,8 @@ class XGBoost(BaseEstimator, ClassifierMixin):
 
     def predict_proba(self, X):
 
-        # Check is fit had been called
-        check_is_fitted(self, ['X_', 'y_'])
-
         # Input validation
+        check_is_fitted(self, ['X_', 'y_'])
         X = check_array(X)
 
         # Center and scale (same transformation as for train features).
