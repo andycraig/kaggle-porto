@@ -4,7 +4,8 @@ Scaler needs to be consistent w.r.t. CV, stacking.
 
 Set up CV for stratifying.
 
-xgboost
+Set up DNN.
 
-DNN?
+Set up xgb.cv with sklearn.StratifiedKFolds. Done, but check what output is.
 
+I had scoring: roc_auc as a hyperparameter for xgboost, but it wasn't used. Removed from hyperparams.yaml. Figure out if I should use it.

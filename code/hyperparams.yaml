@@ -1,3 +1,4 @@
-xgboost: {gamma: 2, max_depth: 6, min_child_weight: 5, scoring: roc_auc}
+xgb: {gamma: 2, max_depth: 6, min_child_weight: 5}
+xgbStratified: {gamma: 2, max_depth: 6, min_child_weight: 5}
 nn: {batch_size: 64, epochs: 1000}
 svm: {C: 0.1, gamma: 0.1}

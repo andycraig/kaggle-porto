@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+"""Wrapper for loading data, training a model (possibly on specified folds),
+and writing out predictions.
+"""
 
 import os, sys, yaml, pickle
 import pandas as pd
@@ -8,26 +10,32 @@ from sklearn.ensemble import BaggingClassifier
 from utils import datetime_for_filename
 from estimators import NN, XGBoost, TestClassifier
 
-model_dict = {'nn':NN, 'xgboost':XGBoost, 'svm':(lambda x: svm.SVC(x, probability=True))}
+# The model names and their definitions.
+model_dict = {'nn':NN, 
+              'xgb':(lambda **kwargs: XGBoost(stratify=False, **kwargs)),
+              'xgbStratified':(lambda **kwargs: XGBoost(stratify=True, **kwargs)),
+              'svm':(lambda **kwargs: svm.SVC(probability=True, **kwargs))}
 
 def main(config_file, model_name, fold):
-    print('config file: ' + config_file)
-    print('model_name: ' + model_name)
-    print('fold: ' + str(fold))
+    print('Config file: ' + config_file)
+    print('Model: ' + model_name)
+    print('Fold for which predictions will be added: ' + str(fold))
 
     with open(config_file, 'r') as f:
         config = yaml.load(f)
     with open(config['hyperparams_file'], 'r') as f:
         hyperparams = yaml.load(f)
 
+    # Define model.
+    print('Define model...')
+    model = model_dict[model_name](**hyperparams[model_name])
+    model_col_name = 'model_' + model_name
+ 
     # Load data.
     print('Loading data...')
     train_df = pd.read_csv('../generated-files/train.csv')
     test_df = pd.read_csv('../generated-files/test.csv')
 
-    model = model_dict[model_name](**hyperparams[model_name])
-    model_col_name = 'model_' + model_name
-    
     if fold != None:
         print('Fitting...')
         model.fit(X=train_df.loc[train_df['fold'] != fold, [x for x in train_df.columns if x != 'target']], 

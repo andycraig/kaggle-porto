@@ -80,7 +80,9 @@ class XGBoost(BaseEstimator, ClassifierMixin):
                  min_child_weight=15, 
                  max_depth=4, 
                  gamma=1,
-                 scoring=None):
+                 scoring=None,
+                 n_folds=None,
+                 stratify=False):
         self.params = {
             'eta':0.05,
             'silent':1,
@@ -99,6 +101,8 @@ class XGBoost(BaseEstimator, ClassifierMixin):
             'alpha':0,
             'lambda':1
         }
+        self.n_folds = n_folds
+        self.stratify = stratify
         self.model, self.X_, self.y_, self.classes_ = None, None, None, None
 
     def fit(self, X, y):
@@ -115,12 +119,20 @@ class XGBoost(BaseEstimator, ClassifierMixin):
         # Return the classifier
         xgtrain = xgb.DMatrix(X_scaled, label=self.y_)
 
-        self.model = xgb.train(params=self.params, 
-                               dtrain=xgtrain, 
-                               num_boost_round=5000, 
-                               evals=[(xgtrain,'train')],
-                               early_stopping_rounds=25, 
-                               verbose_eval = 50)
+        kwargs = dict(params=self.params, 
+                      dtrain=xgtrain, 
+                      num_boost_round=5000, 
+                      evals=[(xgtrain,'train')],
+                      early_stopping_rounds=25, 
+                      verbose_eval=50)
+        if self.cv_folds is None:
+            self.model = xgb.train(**kwags)
+        else:
+            if stratify:
+                stratifiedKFolds = stratifiedKFolds(self.y_, n_folds=self.n_folds)
+                self.model = xgb.cv(folds=stratifiedKFolds, **kwargs)
+            else:
+                self.model = xgb.cv(nfold=self.n_folds, **kwargs)
 
         return self
 
