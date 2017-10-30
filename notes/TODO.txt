@@ -1,3 +1,7 @@
+Move fitting hyperparams to train.py.
+- Check scoring parameter - may not be the same as it is for the main training.
+- Make sure that only hyperparameters that are NOT being fitted are being passed in to model.
+
 Set up stacking. Need to stratify on pos/neg?
 
 Scaler needs to be consistent w.r.t. CV, stacking.
