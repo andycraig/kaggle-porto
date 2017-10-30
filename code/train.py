@@ -5,7 +5,7 @@ and writing out predictions.
 import os, sys, yaml, pickle
 import pandas as pd
 import numpy as np
-from sklearn import cross_validation, svm
+from sklearn import svm
 from sklearn.ensemble import BaggingClassifier
 from utils import datetime_for_filename
 from estimators import NN, XGBoost, TestClassifier
@@ -16,6 +16,10 @@ model_dict = {'nn':NN,
               'xgbStratified':(lambda **kwargs: XGBoost(stratify=True, **kwargs)),
               'svm':(lambda **kwargs: svm.SVC(probability=True, **kwargs))}
 
+tuned_parameters = {'xgb':{'min_child_weight': [3, 5, 7], 'max_depth': [5,  6,  7], 'gamma': [1.5, 2, 2.5] },
+                    'svm':{'gamma': [1e1, 1e0, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5], 'C': [00.1, 0.1, 1, 10, 100, 1000]}}
+
+
 def main(config_file, model_name, fold):
     print('Config file: ' + config_file)
     print('Model: ' + model_name)
@@ -25,7 +29,7 @@ def main(config_file, model_name, fold):
         config = yaml.load(f)
     with open(config['hyperparams_file'], 'r') as f:
         hyperparams = yaml.load(f)
-
+        
     # Define model.
     print('Define model...')
     model = model_dict[model_name](**hyperparams[model_name])
@@ -36,7 +40,22 @@ def main(config_file, model_name, fold):
     train_df = pd.read_csv('../generated-files/train.csv')
     test_df = pd.read_csv('../generated-files/test.csv')
 
-    if fold != None:
+    if fit_hyperparams:
+        print('Finding hyperparameters...')
+        clf = GridSearchCV(model, tuned_parameters, cv=5,
+                    scoring=hyperparams[category_in_hyperparams_file]['scoring'])
+        clf.fit(train_features, train_labels)
+        print('Found best hyperparams:')
+        print(clf.best_params_)
+
+        # Put grid search best params in hyperparams dict.
+        for key in clf.best_params_:
+            hyperparams[category_in_hyperparams_file][key] = clf.best_params_[key]
+        # Save hyperparams.
+        with open(config['hyperparams_file'], 'w') as f:
+            yaml.dump(hyperparams, f)
+        print('Wrote best params to ' + str(config['hyperparams_file']))
+    elif fold != None:
         print('Fitting...')
         model.fit(X=train_df.loc[train_df['fold'] != fold, [x for x in train_df.columns if x != 'target']], 
                   y=train_df.loc[train_df['fold'] != fold, 'target'])

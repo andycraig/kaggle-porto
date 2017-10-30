@@ -8,8 +8,8 @@ from utils import datetime_for_filename
 import pandas as pd
 import numpy as np
 import os, sys, yaml, pickle
-from sklearn import cross_validation, svm
-from sklearn.grid_search import GridSearchCV
+from sklearn import svm
+from sklearn.model_selection import GridSearchCV
 from estimators import NN, XGBoost, TestClassifier
 #import warnings
 #warnings.filterwarnings('ignore')
