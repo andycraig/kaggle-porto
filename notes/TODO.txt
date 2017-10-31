@@ -1,6 +1,4 @@
-Move fitting hyperparams to train.py.
-- Check scoring parameter - may not be the same as it is for the main training.
-- Make sure that only hyperparameters that are NOT being fitted are being passed in to model.
+In fitting hyperparams, check scoring parameter - may not be the same as it is for the main training.
 
 Set up stacking. Need to stratify on pos/neg?
 
@@ -12,4 +10,4 @@ Set up DNN.
 
 Set up xgb.cv with sklearn.StratifiedKFolds. Done, but check what output is.
 
-I had scoring: roc_auc as a hyperparameter for xgboost, but it wasn't used. Removed from hyperparams.yaml. Figure out if I should use it.
+I had scoring: roc_auc as a hyperparameter for xgboost, but it wasn't used. Removed from hyperparams.yaml. Figure out if I should use it. This is for fitting hyperparams, so I do need it. Implement again.
