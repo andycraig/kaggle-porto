@@ -9,7 +9,6 @@ from sklearn.metrics import euclidean_distances
 import sklearn
 from model_nn import get_model
 from tensorflow.contrib import keras
-from sklearn import cross_validation
 import xgboost as xgb
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA

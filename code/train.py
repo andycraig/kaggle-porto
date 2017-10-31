@@ -9,6 +9,7 @@ from sklearn import svm
 from sklearn.ensemble import BaggingClassifier
 from utils import datetime_for_filename
 from estimators import NN, XGBoost, TestClassifier
+from sklearn.model_selection import GridSearchCV
 
 # The model names and their definitions.
 model_dict = {'nn':NN, 
@@ -23,7 +24,7 @@ tuning_hyperparams = {'xgb':{'min_child_weight': [3, 5, 7], 'max_depth': [5,  6,
 def main(config_file, model_name, fit_hyperparams, fold):
     print('Config file: ' + config_file)
     print('Model: ' + model_name)
-    print('Fit hyperparams: ' + fit_hyperparams)
+    print('Fit hyperparams: ' + str(fit_hyperparams))
     print('Fold for which predictions will be added: ' + str(fold))
 
     with open(config_file, 'r') as f:
@@ -87,12 +88,12 @@ def main(config_file, model_name, fit_hyperparams, fold):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Fit model.')
-    parser.add_argument('--config', dest='config_file', help='name of config file')
-    parser.add_argument('--model', dest='model', help='model to fit')
-    parser.add_argument('--hyperparams', const=False, default=True, dest='fit_hyperparams', action='store_const', help='fit hyperparameters instead of training model')
-    parser.add_argument('--fold', dest='fold', default=-1, type=int, help='fold for which values will be predicted and added')
+    parser.add_argument('config', help='name of config file')
+    parser.add_argument('model', choices=['nn', 'xgb', 'xgbStratified', 'svm'], help='model to fit')
+    parser.add_argument('--hyperparams', action='store_true', help='fit hyperparameters instead of training model')
+    parser.add_argument('--fold', default=-1, type=int, help='fold for which values will be predicted and added')
     args = parser.parse_args()
-    if args.fit_hyperparams and args.fold != -1:
+    if args.hyperparams and args.fold != -1:
         print("Can't specify both --hyperparams and --fold.")
     else:
-        main(config_file=args.config_file, model=args.model, fit_hyperparams=args.fit_hyperparams, fold=args.fold)
+        main(config_file=args.config, model_name=args.model, fit_hyperparams=args.hyperparams, fold=args.fold)
