@@ -2,6 +2,7 @@
 *.Rhistory
 code/__pycache__
 code/gini.R
+code/env
 data
 generated-files
 submissions
