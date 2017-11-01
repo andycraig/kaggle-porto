@@ -73,18 +73,19 @@ class NN(BaseEstimator, ClassifierMixin):
 
 # XGBoost classifier
 class XGBoost(BaseEstimator, ClassifierMixin):
-    """
-    @param n_folds: Number of folds on which to cross-validate. None to train with xgb.train instead of xgb.cv.
-    @param stratify: True to preserve positive/negative ratio within folds.
-    """
     def __init__(self, 
                  eval_metric="auc", 
                  min_child_weight=15, 
                  max_depth=4, 
                  gamma=1,
-                 scoring=None,
                  n_folds=None,
-                 stratify=False):
+                 stratify=False,
+                 **kwargs):
+        """
+        @param n_folds: Number of folds on which to cross-validate. None to train with xgb.train instead of xgb.cv.
+        @param stratify: True to preserve positive/negative ratio within folds.
+        @param kwargs: Additional parameters. Currently unused, except to absorb parameter 'scoring'.
+        """
         self.params = {
             'eta':0.05,
             'silent':1,

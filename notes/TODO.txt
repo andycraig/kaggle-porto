@@ -1,13 +1,9 @@
-In fitting hyperparams, check scoring parameter - may not be the same as it is for the main training.
-
 Set up stacking. Need to stratify on pos/neg?
 
-Scaler needs to be consistent w.r.t. CV, stacking.
+Make application of StandardScaler() a pre-processing step. Scaler needs to be consistent w.r.t. CV, stacking.
 
 Set up CV for stratifying.
 
 Set up DNN.
 
 Set up xgb.cv with sklearn.StratifiedKFolds. Done, but check what output is.
-
-I had scoring: roc_auc as a hyperparameter for xgboost, but it wasn't used. Removed from hyperparams.yaml. Figure out if I should use it. This is for fitting hyperparams, so I do need it. Implement again.
