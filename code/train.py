@@ -5,6 +5,7 @@ and writing out predictions.
 import os, sys, yaml, pickle, argparse
 import pandas as pd
 import numpy as np
+import toolz
 from sklearn import svm
 from sklearn.ensemble import BaggingClassifier
 from utils import datetime_for_filename
@@ -13,9 +14,9 @@ from sklearn.model_selection import GridSearchCV
 
 # The model names and their definitions.
 model_dict = {'nn':NN, 
-              'xgb':(lambda **kwargs: XGBoost(stratify=False, **kwargs)),
-              'xgbStratified':(lambda **kwargs: XGBoost(stratify=True, **kwargs)),
-              'svm':(lambda **kwargs: svm.SVC(probability=True, **kwargs))}
+              'xgb':toolz.partial(XGBoost, stratify=False),
+              'xgbStratified':toolz.partial(XGBoost, stratify=True),
+              'svm':toolz.partial(svm.SVC, probability=True)}
 
 tuning_hyperparams = {'xgb':{'min_child_weight': [3, 5, 7], 'max_depth': [5,  6,  7], 'gamma': [1.5, 2, 2.5] },
                     'svm':{'gamma': [1e1, 1e0, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5], 'C': [00.1, 0.1, 1, 10, 100, 1000]}}

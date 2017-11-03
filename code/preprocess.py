@@ -1,7 +1,8 @@
 """Add folds, scale features.
 """
 
-import shutil
+import shutil, itertools
+import toolz
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
@@ -10,20 +11,29 @@ np.random.seed(1031) # Month, date on which file was created.
 
 n_folds = 5
 
-train = pd.read_csv("../data/train.csv")
+print("Loading train...")
+train = (pd.read_csv("../data/train.csv")
+         .drop('id', axis=1)) # Get rid of id so it doesn't get used accidentally for training.
 
 n_rows = len(train) 
 
 # fold: close-to-equal numbers of each fold, in random order.
-fold_vals = np.random.permutation(np.arange(0, n_folds).repeat(np.ceil(n_rows / n_folds)))[0:n_rows]
+fold_vals = np.random.permutation(list(toolz.take(n_rows, itertools.cycle(range(n_folds)))))
 
-train_with_folds = (train.assign(fold=fold_vals)
-                    .drop('id', axis=1)) # Get rid of this so it doesn't get used accidentally for training.
+# Fit scaler before adding folds.
+print("Fitting scaler...")
+scaler = StandardScaler().fit(train)
 
 # Scale and save.
-scale_and_save = lambda x, f: (StandardScaler()
-                                 .fit(x)
-                                 .transform(x)
-                                 .to_csv(f, index=False))
-scale_and_save(train_with_folds, "../generated-files/train.csv")
-scale_and_save(pd.read_csv("../data/test.csv"), "../generated-files/test.csv")
+scale_df = lambda x: pd.DataFrame(data=scaler.transform(x), columns=x.columns)
+
+print("Scaling train...")
+(scale_df(train)
+ .assign(fold=fold_vals) # Add stacking folds to train.
+ .to_csv("../generated-files/train.csv"))
+
+print("Scaling test...")
+(scale_df(pd.read_csv("../data/test.csv"))
+ .to_csv("../generated-files/test.csv"))
+ 
+print("Done.")
