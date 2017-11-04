@@ -73,7 +73,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission):
         print("Predicting...")
         submit_file = config['submit_prefix'] + '_' + datetime_for_filename() + '.csv'
         (test_df
-         .assign(target=model.predict_proba(test_df)[:,1])
+         .assign(target=model.predict_proba(test_df.drop('id', axis=1))[:,1])
          .loc[:, ['id', 'target']]
          .to_csv(submit_file, index=None))
         print("Saved submit file to " + submit_file)
