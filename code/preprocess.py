@@ -22,19 +22,22 @@ fold_vals = np.random.permutation(list(toolz.take(n_rows, itertools.cycle(range(
 
 # Fit scaler before adding folds.
 print("Fitting scaler...")
-scaler = StandardScaler().fit(train)
+scaler = StandardScaler().fit(train.drop('target', axis=1))
 
-# Scale and save.
+# scaler.transform returns a numpy array, so create a wrapper to return a data frame.
 scale_df = lambda x: pd.DataFrame(data=scaler.transform(x), columns=x.columns)
 
 print("Scaling train...")
+targets = train.loc[:, 'target']
 (train
+ .drop('target', axis=1)
  .pipe(scale_df)
- .assign(fold=fold_vals) # Add stacking folds to train.
+ .assign(fold=fold_vals, target=targets) # Add stacking folds to train, and re-attach unscaled targets.
  .to_csv("../generated-files/train.csv", index=False))
 
 print("Scaling test...")
 (pd.read_csv("../data/test.csv")
+ .drop('id', axis=1)
  .pipe(scale_df)
  .to_csv("../generated-files/test.csv", index=False))
  
