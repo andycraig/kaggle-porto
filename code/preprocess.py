@@ -28,12 +28,14 @@ scaler = StandardScaler().fit(train)
 scale_df = lambda x: pd.DataFrame(data=scaler.transform(x), columns=x.columns)
 
 print("Scaling train...")
-(scale_df(train)
+(train
+ .pipe(scale_df)
  .assign(fold=fold_vals) # Add stacking folds to train.
- .to_csv("../generated-files/train.csv"))
+ .to_csv("../generated-files/train.csv", index=False))
 
 print("Scaling test...")
-(scale_df(pd.read_csv("../data/test.csv"))
- .to_csv("../generated-files/test.csv"))
+(pd.read_csv("../data/test.csv")
+ .pipe(scale_df)
+ .to_csv("../generated-files/test.csv", index=False))
  
 print("Done.")
