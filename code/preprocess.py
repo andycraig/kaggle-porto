@@ -12,7 +12,7 @@ np.random.seed(1031) # Month, date on which file was created.
 n_folds = 5
 
 print("Loading train...")
-train = (pd.read_csv("../data/train.csv")
+train = (pd.read_csv(config['train_original'])
          .drop('id', axis=1)) # Get rid of id so it doesn't get used accidentally for training.
 
 n_rows = len(train) 
@@ -33,12 +33,12 @@ targets = train.loc[:, 'target']
  .drop('target', axis=1)
  .pipe(scale_df)
  .assign(fold=fold_vals, target=targets) # Add stacking folds to train, and re-attach unscaled targets.
- .to_csv("../generated-files/train.csv", index=False))
+ .to_csv(config['train'], index=False))
 
 print("Scaling test...")
-(pd.read_csv("../data/test.csv")
+(pd.read_csv(config['test_original'])
  .drop('id', axis=1)
  .pipe(scale_df)
- .to_csv("../generated-files/test.csv", index=False))
+ .to_csv(config['test'], index=False))
  
 print("Done.")

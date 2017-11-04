@@ -36,8 +36,8 @@ def main(config_file, model_name, fit_hyperparams, fold, submission):
         
     # Load data.
     print('Loading data...')
-    train_df = pd.read_csv('../generated-files/train.csv')
-    test_df = pd.read_csv('../generated-files/test.csv')
+    train_df = pd.read_csv(config['train'])
+    test_df = pd.read_csv(config['test'])
 
     if fit_hyperparams:
         # Define model.
@@ -67,7 +67,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission):
         print('Define model...')
         model = model_dict[model_name](**hyperparams[model_name])
         print('Fitting...')
-        model.fit(X=train_df.drop('target', axis=1),
+        model.fit(X=train_df.drop(['target', 'fold'], axis=1),
                   y=train_df.loc[:, 'target'])
         # Create submission file with predictions.
         print("Predicting...")
@@ -92,7 +92,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission):
                 train_df = train_df.assign(model_col_name=np.nan)
             train_df.loc[train_df['fold'] == fold, model_col_name] = model.predict_proba(train_df.loc[train_df['fold'] == fold, :])[:,1]
             train_df.to_csv(config['train_set'], index=None)
-            print('Added predictions for model ' + model_name + ', fold ' + str(fold) + ' to column ' + model_col_name + ' of ../generated-files/train.csv.')
+            print('Added predictions for model ' + model_name + ', fold ' + str(fold) + ' to column ' + model_col_name + ' of ' +  config['train'])
         else: # Ignore folds and fit all data.
             print('Fitting...')
             model.fit(X=train_df.drop('target', axis=1), 

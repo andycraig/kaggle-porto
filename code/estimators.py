@@ -116,11 +116,7 @@ class XGBoost(BaseEstimator, ClassifierMixin):
         self.classes_ = unique_labels(y)
         self.X_, self.y_ = X, y
 
-        # Center and scale.
-        self.scaler = StandardScaler().fit(self.X_)
-        X_scaled = self.scaler.transform(self.X_)
-        # Return the classifier
-        xgtrain = xgb.DMatrix(X_scaled, label=self.y_)
+        xgtrain = xgb.DMatrix(self.X_, label=self.y_)
 
         kwargs = dict(params=self.params, 
                       dtrain=xgtrain, 
@@ -145,9 +141,7 @@ class XGBoost(BaseEstimator, ClassifierMixin):
         check_is_fitted(self, ['X_', 'y_'])
         X = check_array(X)
 
-        # Center and scale (same transformation as for train features).
-        X_scaled = self.scaler.transform(X)
-        xgtest = xgb.DMatrix(X_scaled_PCA)
+        xgtest = xgb.DMatrix(X)
         predictions_class_1 = self.model.predict(xgtest,ntree_limit=self.model.best_ntree_limit)
         predictions_class_1_tranpose = predictions_class_1.reshape([-1, 1])
         preda = np.hstack([1-predictions_class_1_tranpose, predictions_class_1_tranpose])

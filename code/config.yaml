@@ -1,5 +1,8 @@
+train_original: ../data/train.csv
+test_original: ../data/test.csv
+train: ../generated-files/train.csv
+test: ../generated-files/test.csv
 submit_prefix: ../submissions/submit
 hyperparams_file: hyperparams.yaml
-n_models: 3
 n_folds: 5
 n_bagging_estimators: 8
