@@ -1,4 +1,12 @@
-xgb: {gamma: 2, max_depth: 6, min_child_weight: 5, scoring: roc_auc}
-xgbStratified: {gamma: 2, max_depth: 6, min_child_weight: 5}
-nn: {batch_size: 64, epochs: 1000}
-svm: {C: 0.1, gamma: 0.1}
+xgbStratified: {constructor:{gamma: 2, max_depth: 6, min_child_weight: 5},
+                fit:{}}
+nn: {constructor:{batch_size: 64, epochs: 1000},
+                fit:{}}
+svm: {constructor:{C: 0.1, gamma: 0.1},
+                fit:{}}
+xgb: {constructor: {eta:0.05, silent:1, verbose_eval:True, verbose:False,
+            seed:4, objective:"binary:logistic", eval_metric:auc, min_child_weight:5,
+            cosample_bytree:0.8, cosample_bylevel:0.9, max_depth:6, subsample:0.9,
+            max_delta_step:10, gamma:2, alpha:0, lambda:1},
+      fit:{}}
+ 

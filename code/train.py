@@ -9,12 +9,13 @@ import toolz
 from sklearn import svm
 from sklearn.ensemble import BaggingClassifier
 from utils import datetime_for_filename
+from XGBoost import XGBoostClassifier
 from estimators import NN, XGBoost, TestClassifier
 from sklearn.model_selection import GridSearchCV
 
 # The model names and their definitions.
 model_dict = {'nn':NN, 
-              'xgb':toolz.partial(XGBoost, stratify=False),
+              'xgb':XGBClassifier,
               'xgbStratified':toolz.partial(XGBoost, stratify=True),
               'svm':toolz.partial(svm.SVC, probability=True)}
 
@@ -44,7 +45,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission):
         print('Define model...')
         # Define model with only non-tuning parameters, as tuning parameters will
         # be adjusted in GridSearchCV.
-        all_hyperparams = hyperparams[model_name]
+        all_hyperparams = hyperparams[model_name]['constructor']
         non_tuning_hyperparams = {x:all_hyperparams[x] for x in all_hyperparams if not x in non_tuning_hyperparams}
         model = model_dict[model_name](**non_tuning_hyperparams)
 
@@ -80,12 +81,13 @@ def main(config_file, model_name, fit_hyperparams, fold, submission):
     else: # Train with folds, for stacking.
         # Define model.
         print('Define model...')
-        model = model_dict[model_name](**hyperparams[model_name])
+        model = model_dict[model_name](**hyperparams[model_name]['constructor'])
         model_col_name = 'model_' + model_name
         if fold != -1: # Fit for a specific fold.
             print('Fitting...')
             model.fit(X=train_df.loc[train_df['fold'] != fold, [x for x in train_df.columns if x != 'target']], 
-                    y=train_df.loc[train_df['fold'] != fold, 'target'])
+                      y=train_df.loc[train_df['fold'] != fold, 'target'],
+                      **(hyperparams]model_name]['fit'])
             # Add predictions for fold.
             print("Predicting...")
             if not model_col_name in train_df:
