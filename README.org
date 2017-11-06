@@ -32,17 +32,3 @@ Stack.
 
 ~python stack.py config.yaml~
 
-** Notes
-*** DONE Make test files. :testconfig: 
-    CLOSED: [2017-11-04 Sat 14:47] 
-*** DONE Move file names into config YAML files.
-    CLOSED: [2017-11-04 Sat 14:47]
-*** TODO Need to stratify stacking on pos/neg? :stacking:
-*** DONE Make application of StandardScaler() a pre-processing step. :scaling:
-    CLOSED: [2017-11-04 Sat 14:57]
-*** TODO Scaler needs to be consistent w.r.t. CV, stacking. :scaling:
-*** TODO Set up CV for stratifying. 
-*** TODO Set up DNN.                                                     :nn:
-*** TODO Set up xgb.cv with sklearn.StratifiedKFolds. Done, but check what output is. :xgb:
-*** TODO Scaling may be over fitting :scaling:
-

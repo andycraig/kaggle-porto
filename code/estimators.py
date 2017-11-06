@@ -39,6 +39,7 @@ class TestClassifier(BaseEstimator, ClassifierMixin):
         closest = np.argmin(euclidean_distances(X, self.X_), axis=1)
         return self.y_[closest]
 
+
 # NN classifier
 class NN(BaseEstimator, ClassifierMixin):
 
@@ -71,39 +72,29 @@ class NN(BaseEstimator, ClassifierMixin):
         preda = np.hstack([1-predictions_class_1_tranpose, predictions_class_1_tranpose])
         return preda
 
+
 # XGBoost classifier
 class XGBoost(BaseEstimator, ClassifierMixin):
     def __init__(self, 
                  eval_metric="auc", 
-                 min_child_weight=15, 
-                 max_depth=4, 
-                 gamma=1,
                  n_folds=None,
                  stratify=False,
+                 params=None,
+                 fit_params=None,
                  **kwargs):
         """
         @param n_folds: Number of folds on which to cross-validate. None to train with xgb.train instead of xgb.cv.
         @param stratify: True to preserve positive/negative ratio within folds.
         @param kwargs: Additional parameters. Currently unused, except to absorb parameter 'scoring'.
         """
-        self.params = {
-            'eta':0.05,
-            'silent':1,
-            'verbose_eval':True,
-            'verbose':False,
-            'seed':4,
-            'objective':'binary:logistic',
-            'eval_metric':eval_metric,
-            'min_child_weight':min_child_weight,
-            'cosample_bytree':0.8,
-            'cosample_bylevel':0.9,
-            'max_depth':max_depth,
-            'subsample':0.9,
-            'max_delta_step':10,
-            'gamma':gamma,
-            'alpha':0,
-            'lambda':1
-        }
+        if params is None:
+            self.params = {}
+        else:
+            self.params = params
+        if fit_params is None:
+            self.fit_params = {}
+        else:
+            self.fit_params = fit_params
         self.n_folds = n_folds
         self.stratify = stratify
         self.model, self.X_, self.y_, self.classes_ = None, None, None, None
@@ -120,10 +111,8 @@ class XGBoost(BaseEstimator, ClassifierMixin):
 
         kwargs = dict(params=self.params, 
                       dtrain=xgtrain, 
-                      num_boost_round=5000, 
                       evals=[(xgtrain,'train')],
-                      early_stopping_rounds=25, 
-                      verbose_eval=50)
+                      **self.fit_params)
         if self.n_folds is None:
             self.model = xgb.train(**kwargs)
         else:
@@ -146,3 +135,42 @@ class XGBoost(BaseEstimator, ClassifierMixin):
         predictions_class_1_tranpose = predictions_class_1.reshape([-1, 1])
         preda = np.hstack([1-predictions_class_1_tranpose, predictions_class_1_tranpose])
         return preda
+
+
+def FoldsEnsembleClassifier(BaseEstimator, ClassifierMixin):
+    """An ensemble meta-estimator that fits base classifiers on specified
+    subsets of the original dataset and then aggregating their individual
+    predictions by averaging. Trains one base classifier per fold.
+    """
+    
+    def __init__(self,
+                 base_estimator,
+                 folds):
+        """
+        @param base_estimator Should already have been initialised.
+        @param folds Folds. (Not method that creates folds.)
+        """
+        self.base_estimator = base_estimator
+        self.folds = folds
+
+    def fit(self, X, y):
+        # Check that X and y have correct shape
+        X, y = check_X_y(X, y)
+        # Store the classes seen during fit
+        self.classes_ = unique_labels(y)
+        self.X_, self.y_ = X, y
+
+        # TODO Check that can map like this in Python.
+        # TODO Check that estimators have copy method.
+        self._fitted_base_estimators = map(self.folds,
+                                           self.base_estimator.copy().fit)
+
+    def predict_proba(self, X):
+        # Input validation
+        check_is_fitted(self, ['X_', 'y_'])
+        X = check_array(X)
+
+        # Apply each fitted base estimator to X, and average results.
+        # TODO Check that can use reduce like this. Probably different verb.
+        return mean(reduce(X, lambda x: self._fitted_base_estimators(x)[:, 1]))
+

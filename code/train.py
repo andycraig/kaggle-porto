@@ -10,18 +10,8 @@ from sklearn import svm
 from sklearn.ensemble import BaggingClassifier
 from utils import datetime_for_filename
 from XGBoost import XGBoostClassifier
-from estimators import NN, XGBoost, TestClassifier
+from estimators import NN, XGBoost, TestClassifier, FoldsEnsembleClassifier
 from sklearn.model_selection import GridSearchCV
-
-# The model names and their definitions.
-model_dict = {'nn':NN, 
-              'xgb':XGBClassifier,
-              'xgbStratified':toolz.partial(XGBoost, stratify=True),
-              'svm':toolz.partial(svm.SVC, probability=True)}
-
-tuning_hyperparams = {'xgb':{'min_child_weight': [3, 5, 7], 'max_depth': [5,  6,  7], 'gamma': [1.5, 2, 2.5] },
-                    'svm':{'gamma': [1e1, 1e0, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5], 'C': [00.1, 0.1, 1, 10, 100, 1000]}}
-
 
 def main(config_file, model_name, fit_hyperparams, fold, submission):
     print('Config file: ' + config_file)
@@ -39,6 +29,16 @@ def main(config_file, model_name, fit_hyperparams, fold, submission):
     print('Loading data...')
     train_df = pd.read_csv(config['train'])
     test_df = pd.read_csv(config['test'])
+
+    # The model names and their definitions.
+    model_dict = {'nn':NN, 
+                'xgbBagged':toolz.partial(FoldsEnsembleClassifier, base_estimator=XGBClassifier(hyperparams['xgb'])),
+                'xgb':toolz.partial(XGBClassifier),
+                'xgbStratified':toolz.partial(XGBoost, stratify=True),
+                'svm':toolz.partial(svm.SVC, probability=True)}
+
+    tuning_hyperparams = {'xgb':{'min_child_weight': [3, 5, 7], 'max_depth': [5,  6,  7], 'gamma': [1.5, 2, 2.5] },
+                        'svm':{'gamma': [1e1, 1e0, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5], 'C': [00.1, 0.1, 1, 10, 100, 1000]}}
 
     if fit_hyperparams:
         # Define model.
@@ -101,7 +101,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission):
                       y=train_df.loc[:, 'target'])
             # Add predictions for whole test set to test CSV.
             print("Predicting...")
-            test_file = '../generated-files/test.csv'
+            test_file = config['test']
             (test_df
              .assign(model_col_name=model.predict_proba(test_df)[:,1])
              .to_csv(test_file, index=None))
