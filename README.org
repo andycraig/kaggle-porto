@@ -12,7 +12,7 @@ Centre and scale data, set up stacking folds and create dummy data for testing.
 
 ~python preprocess.py~
 
-Models are: xgb, xbgStratified, nn, svm
+Models are: xgb, xgbBagged, xgbStratified, nn, svm
 
 Folds are: 0, ..., 4
 

@@ -52,3 +52,7 @@ xgbStratified:
     num_boost_round: 5000
     early_stopping_rounds: 25
     verbose_eval: 50
+xgbBagged:
+  constructor:
+    n_estimators: 2
+  fit: {}

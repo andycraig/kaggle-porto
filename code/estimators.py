@@ -2,6 +2,8 @@
 
 import numpy as np
 import pandas as pd
+import toolz
+from functools import reduce
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
@@ -137,21 +139,27 @@ class XGBoost(BaseEstimator, ClassifierMixin):
         return preda
 
 
-def StratifiedBaggingClassifier(BaseEstimator, ClassifierMixin):
-    """An ensemble meta-estimator that fits base classifiers on specified
-    subsets of the original dataset and then aggregating their individual
+class StratifiedBaggingClassifier(BaseEstimator, ClassifierMixin):
+    """An ensemble meta-estimator that fits base classifiers to
+    subsets of the original dataset, with proportions in each label
+    class preserved, and then aggregating their individual
     predictions by averaging. Trains one base classifier per subset.
     """
-    
     def __init__(self,
-                 base_estimator,
-                 n_estimators):
+                 base_estimator=None,
+                 n_estimators=10,
+                 fit_params=None):
         """
         @param base_estimator Should already have been initialised.
-        @param folds Folds. (Not method that creates folds.)
+        @param n_estimators How many base estimators to use.
+        @param fit_params Dictionary of parameters to be passed to base estimator fit method.
         """
         self.base_estimator = base_estimator
         self.n_estimators = n_estimators
+        if fit_params is None:
+            self.fit_params = {}
+        else:
+            self.fit_params = fit_params
 
     def fit(self, X, y):
         # Check that X and y have correct shape
@@ -163,15 +171,14 @@ def StratifiedBaggingClassifier(BaseEstimator, ClassifierMixin):
         # Take samples of X and y, maintaining proportions in y.
         n_classes = len(self.classes_)
         indices_of_classes = [np.where(y == z)[0] for z in self.classes_] # Need [0] because np.where returns a tuple.
-        # TODO Make each n_in_each_class an integer.
-        # TODO Check that total of n_in_each_class is equal to n.
-        n_in_each_class = [len(z) / len(y) for z in indices_of_classes]
+        n_in_each_class = map(len, indices_of_classes)
         # Take subsets of the data,
         # maintaining the proportion of y classes,
-        indices_for_estimators = [list(map(lambda a, b: np.random.choice(a, b), indices_of_classes, n_in_each_class)) for _ in range(n_estimators)]
+        indices_for_estimators = [toolz.itertoolz.concat(map(lambda a, b: np.random.choice(a, b), indices_of_classes, n_in_each_class)) for _ in range(self.n_estimators)]
         # Fit base estimators.
-        # TODO Check that estimators have copy method.
-        self._fitted_base_estimators = map(lambda sample_indices: self.base_estimator.copy().fit(X_sample[sample_indices], y_sample[sample_indices]),
+        self._fitted_base_estimators = map(lambda sample_indices: self.base_estimator.copy().fit(X_sample[sample_indices, :],
+                                                                                                 y_sample[sample_indices],
+                                                                                                 **self.fit_params),
                                            indices_for_estimators)
 
     def predict_proba(self, X):
@@ -182,4 +189,3 @@ def StratifiedBaggingClassifier(BaseEstimator, ClassifierMixin):
         # Apply each fitted base estimator to X, and average results.
         # TODO Check that sum is applied over the right axis.
         return reduce(sum, map(lambda z: z.predict_proba(X), self._fitted_base_estimators)) / self.n_estimators
-

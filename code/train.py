@@ -7,10 +7,9 @@ import pandas as pd
 import numpy as np
 import toolz
 from sklearn import svm
-from sklearn.ensemble import BaggingClassifier
 from utils import datetime_for_filename
-from XGBoost import XGBoostClassifier
-from estimators import NN, XGBoost, TestClassifier, FoldsEnsembleClassifier
+from xgboost import XGBClassifier
+from estimators import NN, XGBoost, TestClassifier, StratifiedBaggingClassifier
 from sklearn.model_selection import GridSearchCV
 
 def main(config_file, model_name, fit_hyperparams, fold, submission):
@@ -32,7 +31,9 @@ def main(config_file, model_name, fit_hyperparams, fold, submission):
 
     # The model names and their definitions.
     model_dict = {'nn':NN, 
-                'xgbBagged':toolz.partial(FoldsEnsembleClassifier, base_estimator=XGBClassifier(hyperparams['xgb'])),
+                'xgbBagged':toolz.partial(StratifiedBaggingClassifier,
+                                          base_estimator=XGBClassifier(hyperparams['xgb']['constructor']),
+                                          fit_params=hyperparams['xgb']['fit']),
                 'xgb':toolz.partial(XGBClassifier),
                 'xgbStratified':toolz.partial(XGBoost, stratify=True),
                 'svm':toolz.partial(svm.SVC, probability=True)}
@@ -52,7 +53,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission):
         print('Finding hyperparameters...')
         clf = GridSearchCV(model, tuning_hyperparams, cv=5,
                     scoring=hyperparams[model_name]['scoring'])
-        clf.fit(train_features, train_labels)
+        clf.fit(train_features, train_labels, **hyperparams[model_name]['fit'])
         print('Found best hyperparams:')
         print(clf.best_params_)
 
@@ -66,7 +67,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission):
     elif submission: # Train and produce submission file.
         # Define model.
         print('Define model...')
-        model = model_dict[model_name](**hyperparams[model_name])
+        model = model_dict[model_name](**hyperparams[model_name]['constructor'])
         print('Fitting...')
         model.fit(X=train_df.drop(['target', 'fold'], axis=1),
                   y=train_df.loc[:, 'target'])
@@ -87,7 +88,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission):
             print('Fitting...')
             model.fit(X=train_df.loc[train_df['fold'] != fold, [x for x in train_df.columns if x != 'target']], 
                       y=train_df.loc[train_df['fold'] != fold, 'target'],
-                      **(hyperparams]model_name]['fit'])
+                      **(hyperparams[model_name]['fit']))
             # Add predictions for fold.
             print("Predicting...")
             if not model_col_name in train_df:
@@ -110,7 +111,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Fit model.')
     parser.add_argument('config', help='name of config file')
-    parser.add_argument('model', choices=['nn', 'xgb', 'xgbStratified', 'svm'], help='model to fit')
+    parser.add_argument('model', choices=['nn', 'xgb', 'xgbStratified', 'xgbBagged', 'svm'], help='model to fit')
     g = parser.add_mutually_exclusive_group(required=True)
     g.add_argument('--hyperparams', action='store_true', help='fit hyperparameters instead of training model')
     g.add_argument('--fold', default=None, type=int, help='fold for which values will be predicted and added. Set to negative to train on all folds and add to test')
