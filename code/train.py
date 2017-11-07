@@ -32,7 +32,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission):
     # The model names and their definitions.
     model_dict = {'nn':NN, 
                 'xgbBagged':toolz.partial(StratifiedBaggingClassifier,
-                                          base_estimator=XGBClassifier(hyperparams['xgb']['constructor']),
+                                          base_estimator=XGBClassifier(**hyperparams['xgb']['constructor']),
                                           fit_params=hyperparams['xgb']['fit']),
                 'xgb':toolz.partial(XGBClassifier),
                 'xgbStratified':toolz.partial(XGBoost, stratify=True),

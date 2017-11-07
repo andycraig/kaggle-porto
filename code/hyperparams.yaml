@@ -10,48 +10,22 @@ svm:
   fit: {}
 xgb:
   constructor:
-    eta: 0.05
+    learning_rate: 0.05
     silent: 1
-    verbose_eval: True
-    verbose: False
     seed: 4
     objective: "binary:logistic"
-    eval_metric: auc
     min_child_weight: 5
-    cosample_bytree: 0.8
-    cosample_bylevel: 0.9
+    colsample_bytree: 0.8
+    colsample_bylevel: 0.9
     max_depth: 6
     subsample: 0.9
     max_delta_step: 10
     gamma: 2
-    alpha: 0
-    lambda: 1
+    reg_alpha: 0
+    reg_lambda: 1
   fit:
-    num_boost_round: 5000
-    early_stopping_rounds: 25
-    verbose_eval: 50
-xgbStratified:
-  constructor:
-    eta: 0.05
-    silent: 1
-    verbose_eval: True
-    verbose: False
-    seed: 4
-    objective: "binary:logistic"
     eval_metric: auc
-    min_child_weight: 5
-    cosample_bytree: 0.8
-    cosample_bylevel: 0.9
-    max_depth: 6
-    subsample: 0.9
-    max_delta_step: 10
-    gamma: 2
-    alpha: 0
-    lambda: 1
-  fit:
-    num_boost_round: 5000
     early_stopping_rounds: 25
-    verbose_eval: 50
 xgbBagged:
   constructor:
     n_estimators: 2
