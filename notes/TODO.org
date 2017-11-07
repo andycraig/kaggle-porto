@@ -1,3 +1,4 @@
+* TODO Add target_encode. :preprocessing:
 * TODO Handle features with many categories. :preprocessing:
 * TODO Implement equivalent of BaggingClassifier, for which subsets can be specified, so can use stratified folds for 'bagged' XGB. :xgb:
 * TODO Wrap xgb in FoldsEnsembleClassifier. :xgb:
