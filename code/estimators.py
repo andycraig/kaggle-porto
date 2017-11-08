@@ -175,22 +175,11 @@ class StratifiedBaggingClassifier(BaseEstimator, ClassifierMixin):
         n_in_each_class = list(map(len, indices_of_classes))
         # Take subsets of the data,
         # maintaining the proportion of y classes,
-        test = map(lambda a, b: np.random.choice(a, b), indices_of_classes, n_in_each_class)
-        indices_for_estimators = [list(toolz.itertoolz.concat(map(lambda a, b: np.random.choice(a, b), indices_of_classes, n_in_each_class))) for _ in range(self.n_estimators)]
+        (np.random.choice(a, b) for a, b in zip(indices_of_classes, n_in_each_class))
+        indices_for_estimators = [list(toolz.itertoolz.concat(np.random.choice(a, b) for a, b in zip(indices_of_classes, n_in_each_class))) for _ in range(self.n_estimators)]
         # Fit base estimators.
-        xx = self.X_[indices_for_estimators[0], :]
-        yy = self.y_[indices_for_estimators[0]]
-        print(xx.shape)
-        print(yy.shape)
-        ee = sklearn.base.clone(self.base_estimator)
-        print(ee)
-        print(ee.fit(xx, yy))
-        print("PRINT self.fit_params. THEY ARE PROBABLY BAD")
-        print(self.fit_params)
-        self._fitted_base_estimators = list(map(lambda sample_indices: sklearn.base.clone(self.base_estimator).fit(self.X_[sample_indices, :],
-                                                                                                 self.y_[sample_indices],
-                                                                                                 **self.fit_params),
-                                           indices_for_estimators))
+        self._fitted_base_estimators = [sklearn.base.clone(self.base_estimator).fit(self.X_[sample_indices, :], self.y_[sample_indices], **self.fit_params)
+                                           for sample_indices in indices_for_estimators]
 
     def predict_proba(self, X):
         # Input validation
@@ -198,6 +187,5 @@ class StratifiedBaggingClassifier(BaseEstimator, ClassifierMixin):
         X = check_array(X)
 
         # Apply each fitted base estimator to X, and average results.
-        print(self._fitted_base_estimators[0].predict_proba(X))
         # TODO Check that sum is applied over the right axis.
         return reduce(sum, map(lambda z: z.predict_proba(X), self._fitted_base_estimators)) / self.n_estimators

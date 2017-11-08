@@ -25,7 +25,6 @@ xgb:
     reg_lambda: 1
   fit:
     eval_metric: auc
-    early_stopping_rounds: 25
 xgbBagged:
   constructor:
     n_estimators: 2
