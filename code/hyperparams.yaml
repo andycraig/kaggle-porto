@@ -1,7 +1,7 @@
 nn:
   constructor:
-    batch_size: 64
-    epochs: 1000
+    batch_size: 10
+    epochs: 5
   fit: {}
 svm:
   constructor:

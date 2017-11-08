@@ -10,7 +10,7 @@ from sklearn.utils.multiclass import unique_labels
 from sklearn.metrics import euclidean_distances
 import sklearn
 from model_nn import get_model
-from tensorflow.contrib import keras
+import tensorflow.contrib.keras as keras
 import xgboost as xgb
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
@@ -45,35 +45,43 @@ class TestClassifier(BaseEstimator, ClassifierMixin):
 # NN classifier
 class NN(BaseEstimator, ClassifierMixin):
 
-    def __init__(self, epochs=1000, batch_size=64, extra_layer=False):
+    def __init__(self, epochs, batch_size):
         self.epochs = epochs
         self.batch_size = batch_size
-        self.extra_layer = extra_layer
+        # NN object.
+        self.m = keras.models.Sequential()
 
     def fit(self, X, y):
+
+        input_dim = 71
+        if input_dim != X.shape[1]:
+            raise ValueError("NN model expects " + str(input_dim) + " inputs, but X has " + str(X.shape[1]) + " features.")
+
         # Check that X and y have correct shape.
         X, y = check_X_y(X, y)
         # Store the classes seen during fit.
         self.classes_ = unique_labels(y)
-
         self.X_, self.y_ = X, y
         
-        raise NotImplementedError("Haven't implemented NN model.")
-
+        # Construct NN.
+        self.m.add(keras.layers.Dense(units=64, input_dim=self.X_.shape[1]))
+        self.m.add(keras.layers.Activation('relu'))
+        self.m.add(keras.layers.Dense(units=2))
+        self.m.add(keras.layers.Activation('softmax')) 
+        self.m.compile(loss='categorical_crossentropy',
+                  optimizer='sgd',
+                  metrics=['accuracy'])
+        # Need targets to be binary matrix of shape (samples, classes).
+        y_binary = keras.utils.to_categorical(self.y_)
+        self.m.fit(self.X_, y_binary, epochs=self.epochs, batch_size=self.batch_size)
         return self
 
     def predict_proba(self, X):
-
         # Input validation
         check_is_fitted(self, ['X_', 'y_'])
         X = check_array(X)
-
-        # Convert X (list of matrices) to a matrix before sending to model.predict().
-        predictions_class_1 = self.model.predict(X.reshape([-1, img_x, img_y, n_channels]))
-        predictions_class_1_tranpose = predictions_class_1.reshape([-1, 1])
-        preda = np.hstack([1-predictions_class_1_tranpose, predictions_class_1_tranpose])
+        preda = self.m.predict(X, batch_size=128)
         return preda
-
 
 # XGBoost classifier
 class XGBoost(BaseEstimator, ClassifierMixin):
