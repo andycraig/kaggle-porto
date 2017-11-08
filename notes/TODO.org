@@ -1,9 +1,12 @@
 * TODO Figure out why early_stopping_rounds=25 causes errors in xgbBagged but not xgb. :xgb:
 * TODO Put early_stopping_rounds=25 back in to xgb's in hyperparams.yaml. :xgb:
-* TODO Add target_encode. :preprocessing:
-* TODO Handle features with many categories. :preprocessing:
-* TODO Implement equivalent of BaggingClassifier, for which subsets can be specified, so can use stratified folds for 'bagged' XGB. :xgb:
-* TODO Wrap xgb in FoldsEnsembleClassifier. :xgb:
+* DONE Add target_encode.                                     :preprocessing:
+  CLOSED: [2017-11-08 Wed 08:52]
+* DONE Handle features with many categories (target_encode).  :preprocessing:
+  CLOSED: [2017-11-08 Wed 08:52]
+* DONE Implement equivalent of BaggingClassifier, for which subsets can be specified, so can use stratified folds for 'bagged' XGB. :xgb:
+  CLOSED: [2017-11-08 Wed 08:31]
+* TODO Wrap xgb in StratifiedBaggingClassifier.                         :xgb:
 * DONE Make test files. :testconfig: 
     CLOSED: [2017-11-04 Sat 14:47] 
 * DONE Move file names into config YAML files.
