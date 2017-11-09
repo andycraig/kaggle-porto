@@ -12,6 +12,10 @@ Centre and scale data, set up stacking folds and create dummy data for testing.
 
 ~python preprocess.py~
 
+Dummy data only:
+
+~python preprocess.py --dummy~
+
 Models are: xgb, xgbBagged, xgbStratified, nn, svm
 
 Folds are: 0, ..., 4
@@ -23,6 +27,10 @@ Can train and produce submission file with:
 Fit hyperparameters.
 
 ~python train.py config.yaml MODEL --hyperparams~
+
+Check score under cross-validation:
+
+~python train.py config.yaml MODEL --cv~
 
 Train each model for each fold.
 

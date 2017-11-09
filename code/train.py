@@ -7,10 +7,10 @@ import pandas as pd
 import numpy as np
 import toolz
 from sklearn import svm
-from utils import datetime_for_filename
+from utils import datetime_for_filename, eval_gini
 from xgboost import XGBClassifier
 from estimators import NN, XGBoost, TestClassifier, StratifiedBaggingClassifier
-from sklearn.model_selection import GridSearchCV, StratifiedKFold
+from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_score
 
 def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
     print('Config file: ' + config_file)
@@ -86,13 +86,15 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
         model = model_dict[model_name](**hyperparams[model_name]['constructor'])
         X = train_df.drop(['target', 'fold'], axis=1)
         y = train_df.loc[:, 'target']
-        n_splits = 2
-        for i_split, train_index, test_index in enumerate(StratifiedKFolds(n_splits=n_splits).splits(X, y)):
-            print('Fitting CV fold ' + str(i_split + 1) + '/' + str(n_splits) + '...')
-            model.fit(X=X.loc[train_index, :], y=y[train_index])
-            model.predict(X=X.loc[test_index, :])
-            # TODO Estimate error.
-        # TODO Report error.
+        n_splits = 5
+        fit_params = hyperparams[model_name]['fit']
+        def gini_scoring_fn(estimator, scoring_X, scoring_y):
+            preds = estimator.predict_proba(scoring_X)[:, 1]
+            return eval_gini(y_true=scoring_y, y_prob=preds)
+        scores = cross_val_score(estimator=model, X=X, y=y, cv=n_splits, verbose=1,
+                                 scoring=gini_scoring_fn, fit_params=fit_params)
+        # Report error.
+        print('Gini score mean (standard deviation): ' + str(np.mean(scores)) + ' (' +  str(np.sqrt(np.var(scores))) + ')')
     else: # Train with folds, for stacking.
         # Define model.
         print('Define model...')
