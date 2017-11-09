@@ -12,6 +12,8 @@ from xgboost import XGBClassifier
 from estimators import NN, XGBoost, TestClassifier, StratifiedBaggingClassifier
 from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_score
 
+float_format = '%.8f'
+
 def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
     print('Config file: ' + config_file)
     print('Model: ' + model_name)
@@ -78,7 +80,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
         (test_df
          .assign(target=model.predict_proba(test_df.drop('id', axis=1))[:,1])
          .loc[:, ['id', 'target']]
-         .to_csv(submit_file, index=None))
+         .to_csv(submit_file, index=None, float_format=float_format))
         print("Saved submit file to " + submit_file)
     elif cv: # Cross-validate model to estimate accuracy.
         # Define model.
@@ -91,8 +93,8 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
         def gini_scoring_fn(estimator, scoring_X, scoring_y):
             preds = estimator.predict_proba(scoring_X)[:, 1]
             return eval_gini(y_true=scoring_y, y_prob=preds)
-        scores = cross_val_score(estimator=model, X=X, y=y, cv=n_splits, verbose=1,
-                                 scoring=gini_scoring_fn, fit_params=fit_params)
+        print("Estimating scores using cross-validation...")
+        scores = cross_val_score(estimator=model, X=X, y=y, cv=n_splits, verbose=1, fit_params=fit_params, scoring=gini_scoring_fn)
         # Report error.
         print('Gini score mean (standard deviation): ' + str(np.mean(scores)) + ' (' +  str(np.sqrt(np.var(scores))) + ')')
     else: # Train with folds, for stacking.
@@ -110,7 +112,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
             if not model_col_name in train_df:
                 train_df = train_df.assign(model_col_name=np.nan)
             train_df.loc[train_df['fold'] == fold, model_col_name] = model.predict_proba(train_df.loc[train_df['fold'] == fold, :])[:,1]
-            train_df.to_csv(config['train_set'], index=None)
+            train_df.to_csv(config['train_set'], index=None, float_format=float_format)
             print('Added predictions for model ' + model_name + ', fold ' + str(fold) + ' to column ' + model_col_name + ' of ' +  config['train'])
         else: # Ignore folds and fit all data.
             print('Fitting...')
@@ -121,7 +123,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
             test_file = config['test']
             (test_df
              .assign(model_col_name=model.predict_proba(test_df)[:,1])
-             .to_csv(test_file, index=None))
+             .to_csv(test_file, index=None, float_format=float_format))
             print('Added predictions for model ' + model_name + ' to column ' + model_col_name + ' of ' + test_file)
 
 if __name__ == "__main__":
