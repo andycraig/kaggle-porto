@@ -1,7 +1,7 @@
 nn:
   constructor:
     batch_size: 10
-    epochs: 5
+    epochs: 1
   fit: {}
 svm:
   constructor:
@@ -25,6 +25,7 @@ xgb:
     reg_lambda: 1
   fit:
     eval_metric: auc
+    verbose: True
 xgbBagged:
   constructor:
     n_estimators: 2

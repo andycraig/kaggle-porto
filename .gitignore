@@ -6,3 +6,4 @@ code/env
 data
 generated-files
 submissions
+packrat/lib*/

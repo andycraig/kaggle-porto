@@ -48,39 +48,38 @@ class NN(BaseEstimator, ClassifierMixin):
     def __init__(self, epochs, batch_size):
         self.epochs = epochs
         self.batch_size = batch_size
-        # NN object.
-        self.m = keras.models.Sequential()
-
+ 
     def fit(self, X, y):
-
-        input_dim = 71
-        if input_dim != X.shape[1]:
-            raise ValueError("NN model expects " + str(input_dim) + " inputs, but X has " + str(X.shape[1]) + " features.")
 
         # Check that X and y have correct shape.
         X, y = check_X_y(X, y)
         # Store the classes seen during fit.
         self.classes_ = unique_labels(y)
         self.X_, self.y_ = X, y
+
+        # NN object.
+        self.model = keras.models.Sequential()
+        self.model.add(keras.layers.Dense(128, activation='relu', input_dim=self.X_.shape[1]))
+        self.model.add(keras.layers.Dropout(0.5))
+        self.model.add(keras.layers.Dense(128, activation='relu'))
+        self.model.add(keras.layers.Dropout(0.5))
+        self.model.add(keras.layers.Dense(1, activation='sigmoid'))
+        self.model.compile(loss='binary_crossentropy',
+                           optimizer='rmsprop',
+                           metrics=['accuracy'])
         
         # Construct NN.
-        self.m.add(keras.layers.Dense(units=64, input_dim=self.X_.shape[1]))
-        self.m.add(keras.layers.Activation('relu'))
-        self.m.add(keras.layers.Dense(units=2))
-        self.m.add(keras.layers.Activation('softmax')) 
-        self.m.compile(loss='categorical_crossentropy',
-                  optimizer='sgd',
-                  metrics=['accuracy'])
-        # Need targets to be binary matrix of shape (samples, classes).
-        y_binary = keras.utils.to_categorical(self.y_)
-        self.m.fit(self.X_, y_binary, epochs=self.epochs, batch_size=self.batch_size)
+       # Need targets to be binary matrix of shape (samples, classes).
+        self.model.fit(self.X_, self.y_, epochs=self.epochs, batch_size=self.batch_size)
         return self
 
     def predict_proba(self, X):
         # Input validation
         check_is_fitted(self, ['X_', 'y_'])
         X = check_array(X)
-        preda = self.m.predict(X, batch_size=128)
+        preda_pos = self.model.predict(X, batch_size=128)
+        # predict_proba needs to return predictions for both negative and positive.
+        preda = np.hstack([(1 - preda_pos), preda_pos])
         return preda
 
 # XGBoost classifier
@@ -196,4 +195,5 @@ class StratifiedBaggingClassifier(BaseEstimator, ClassifierMixin):
 
         # Apply each fitted base estimator to X, and average results.
         # TODO Check that sum is applied over the right axis.
-        return reduce(sum, map(lambda z: z.predict_proba(X), self._fitted_base_estimators)) / self.n_estimators
+        proba =  reduce(np.add, (z.predict_proba(X) for z in self._fitted_base_estimators)) / self.n_estimators
+        return proba
