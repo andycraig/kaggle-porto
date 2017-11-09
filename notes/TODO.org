@@ -17,6 +17,7 @@
     CLOSED: [2017-11-04 Sat 14:57]
 * TODO Scaler needs to be consistent w.r.t. CV, stacking. :scaling:
 * TODO Set up CV for stratifying. 
+* TODO To train, add --cv option for estimating accuracy. :misc:
 * TODO Figure out if eval_metric: auc does anything when there is no eval_set specified. :xgb:
 * TODO Fix xbgBagged predictions being over 1. :xgbBagged:
 * TODO Change DNN parameters from testing parameters. :nn:

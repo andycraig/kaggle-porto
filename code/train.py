@@ -10,14 +10,15 @@ from sklearn import svm
 from utils import datetime_for_filename
 from xgboost import XGBClassifier
 from estimators import NN, XGBoost, TestClassifier, StratifiedBaggingClassifier
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
 
-def main(config_file, model_name, fit_hyperparams, fold, submission):
+def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
     print('Config file: ' + config_file)
     print('Model: ' + model_name)
     print('Fit hyperparams? ' + str(fit_hyperparams))
     print('Fold for which predictions will be added: ' + str(fold))
     print('Submission? ' + str(submission))
+    print('Cross-validate? ' + str(cv))
 
     with open(config_file, 'r') as f:
         config = yaml.load(f)
@@ -79,6 +80,19 @@ def main(config_file, model_name, fit_hyperparams, fold, submission):
          .loc[:, ['id', 'target']]
          .to_csv(submit_file, index=None))
         print("Saved submit file to " + submit_file)
+    elif cv: # Cross-validate model to estimate accuracy.
+        # Define model.
+        print('Define model...')
+        model = model_dict[model_name](**hyperparams[model_name]['constructor'])
+        X = train_df.drop(['target', 'fold'], axis=1)
+        y = train_df.loc[:, 'target']
+        n_splits = 2
+        for i_split, train_index, test_index in enumerate(StratifiedKFolds(n_splits=n_splits).splits(X, y)):
+            print('Fitting CV fold ' + str(i_split + 1) + '/' + str(n_splits) + '...')
+            model.fit(X=X.loc[train_index, :], y=y[train_index])
+            model.predict(X=X.loc[test_index, :])
+            # TODO Estimate error.
+        # TODO Report error.
     else: # Train with folds, for stacking.
         # Define model.
         print('Define model...')
@@ -116,5 +130,6 @@ if __name__ == "__main__":
     g.add_argument('--hyperparams', action='store_true', help='fit hyperparameters instead of training model')
     g.add_argument('--fold', default=None, type=int, help='fold for which values will be predicted and added. Set to negative to train on all folds and add to test')
     g.add_argument('--sub', action='store_true', help='fit model and produce submission file')
+    g.add_argument('--cv', action='store_true', help='cross-validate file and estimate accuracy')
     args = parser.parse_args()
-    main(config_file=args.config, model_name=args.model, fit_hyperparams=args.hyperparams, fold=args.fold, submission=args.sub)
+    main(config_file=args.config, model_name=args.model, fit_hyperparams=args.hyperparams, fold=args.fold, submission=args.sub, cv=args.cv)
