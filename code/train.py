@@ -41,28 +41,28 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
                 'xgbStratified':toolz.partial(XGBoost, stratify=True),
                 'svm':toolz.partial(svm.SVC, probability=True)}
 
-    tuning_hyperparams = {'xgb':{'min_child_weight': [3, 5, 7], 'max_depth': [5,  6,  7], 'gamma': [1.5, 2, 2.5] },
-                        'svm':{'gamma': [1e1, 1e0, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5], 'C': [00.1, 0.1, 1, 10, 100, 1000]}}
-
     if fit_hyperparams:
         # Define model.
         print('Define model...')
         # Define model with only non-tuning parameters, as tuning parameters will
         # be adjusted in GridSearchCV.
-        all_hyperparams = hyperparams[model_name]['constructor']
-        non_tuning_hyperparams = {x:all_hyperparams[x] for x in all_hyperparams if not x in non_tuning_hyperparams}
+        constructor_hyperparams = hyperparams[model_name]['constructor']
+        tuning_hyperparams = hyperparams[model_name]['tuning_hyperparams']
+        non_tuning_hyperparams = {x:constructor_hyperparams[x] for x in constructor_hyperparams if not x in tuning_hyperparams}
         model = model_dict[model_name](**non_tuning_hyperparams)
 
         print('Finding hyperparameters...')
-        clf = GridSearchCV(model, tuning_hyperparams, cv=5,
-                    scoring=hyperparams[model_name]['scoring'])
-        clf.fit(train_features, train_labels, **hyperparams[model_name]['fit'])
+        n_splits = 5
+        clf = GridSearchCV(model, param_grid=tuning_hyperparams, cv=n_splits,
+                           scoring='roc_auc')
+        X = train_df.drop(['target', 'fold'], axis=1)
+        y = train_df.loc[:, 'target']
+        clf.fit(X=X, y=y, **hyperparams[model_name]['fit'])
         print('Found best hyperparams:')
         print(clf.best_params_)
 
         # Put grid search best params in hyperparams dict.
-        for key in clf.best_params_:
-            hyperparams[model_name] = clf.best_params_[key]
+        hyperparams[model_name]['constructor'].update(clf.best_params_)
         # Save hyperparams.
         with open(config['hyperparams_file'], 'w') as f:
             yaml.dump(hyperparams, f)

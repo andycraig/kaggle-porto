@@ -8,6 +8,9 @@ svm:
     C: 0.1
     gamma: 0.1
   fit: {}
+  tuning_hyperparams:
+    gamma: [1e1, 1e0, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5]
+    C: [00.1, 0.1, 1, 10, 100, 1000]
 xgb:
   constructor:
     learning_rate: 0.05
@@ -26,6 +29,10 @@ xgb:
   fit:
     eval_metric: auc
     verbose: True
+  tuning_hyperparams:
+    min_child_weight: [3, 5, 7]
+    max_depth: [5,  6,  7]
+    gamma: [1.5, 2, 2.5]
 xgbBagged:
   constructor:
     n_estimators: 2

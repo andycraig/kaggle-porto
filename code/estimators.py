@@ -59,13 +59,13 @@ class NN(BaseEstimator, ClassifierMixin):
 
         # NN object.
         self.model = keras.models.Sequential()
-        self.model.add(keras.layers.Dense(128, activation='relu', input_dim=self.X_.shape[1]))
+        self.model.add(keras.layers.Dense(64, activation='relu', input_dim=self.X_.shape[1]))
         self.model.add(keras.layers.Dropout(0.5))
-        self.model.add(keras.layers.Dense(128, activation='relu'))
+        self.model.add(keras.layers.Dense(64, activation='relu'))
         self.model.add(keras.layers.Dropout(0.5))
         self.model.add(keras.layers.Dense(1, activation='sigmoid'))
         self.model.compile(loss='binary_crossentropy',
-                           optimizer='rmsprop',
+                           optimizer='sgd',
                            metrics=['accuracy'])
         
         # Construct NN.

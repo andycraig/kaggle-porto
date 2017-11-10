@@ -3,6 +3,6 @@ test_original: ../generated-files/test.csv
 train: ../generated-files/dummy_train.csv
 test: ../generated-files/dummy_test.csv
 submit_prefix: ../submissions/submit
-hyperparams_file: hyperparams.yaml
+hyperparams_file: test_hyperparams.yaml
 n_folds: 5
 n_bagging_estimators: 8
