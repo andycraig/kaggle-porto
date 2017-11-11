@@ -8,6 +8,7 @@ Python package requirements are in code/requirements.txt.
 
 All commands should be performed in code/.
 
+*** Preprocess
 Centre and scale data, set up stacking folds and create dummy data for testing.
 
 ~python preprocess.py~
@@ -16,7 +17,8 @@ Dummy data only:
 
 ~python preprocess.py --dummy~
 
-Models are: xgb, xgbBagged, xgbStratified, nn, svm
+*** Fit models
+Models are: xgb, xgbBagged, xgbStratified, nn, nnBagged, svm, logisticRegression, logisticRegressionBagged
 
 Folds are: 0, ..., 4
 
@@ -36,7 +38,8 @@ Train each model for each fold.
 
 ~python train.py config.yaml MODEL --fold FOLD~
 
-Stack.
+In one call to train.py, you can specify --hyperparams, --cv and one of --sub or --fold. Hyperparameter fitting always happens first, then score checking with cross-validation, then fitting for a submission file or to folds.
 
+*** Stack
 ~python stack.py config.yaml~
 

@@ -1,8 +1,9 @@
 nn:
   constructor:
-    batch_size: 10
-    epochs: 1
+    batch_size: 100
+    epochs: 5
   fit: {}
+  tuning_hyperparams: {}
 svm:
   constructor:
     C: 0.1
@@ -30,10 +31,24 @@ xgb:
     eval_metric: auc
     verbose: True
   tuning_hyperparams:
-    min_child_weight: [3, 5, 7]
-    max_depth: [5,  6,  7]
     gamma: [1.5, 2, 2.5]
+    learning_rate: [0.05, 0.1]
 xgbBagged:
   constructor:
-    n_estimators: 2
+    n_estimators: 5
   fit: {}
+  tuning_hyperparams: {}
+nnBagged:
+  constructor:
+    n_estimators: 5
+  fit: {}
+  tuning_hyperparams: {}
+logisticRegression:
+  constructor: {}
+  fit: {}
+  tuning_hyperparams: {}
+logisticRegressionBagged:
+  constructor:
+    n_estimators: 5
+  fit: {}
+  tuning_hyperparams: {}

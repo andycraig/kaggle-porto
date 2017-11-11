@@ -1,4 +1,32 @@
-* TODO Set up nnBagged. :nn:
+* DONE Add logistic regression.                                          :lm:
+  CLOSED: [2017-11-11 Sat 12:19]
+** DONE In train.py.
+   CLOSED: [2017-11-11 Sat 12:06]
+** DONE In hyperparams.yaml.
+   CLOSED: [2017-11-11 Sat 12:19]
+* Do something about missing values in train. :preprocess:
+* TODO Set so can train multiple folds in one call of train.py. :misc:
+* DONE Add bagged logistic regression.                                   :lm:
+  CLOSED: [2017-11-11 Sat 12:19]
+** DONE In hyperparams.yaml.
+   CLOSED: [2017-11-11 Sat 12:19]
+* DONE Remove calc variables.                                    :preprocess:
+  CLOSED: [2017-11-11 Sat 12:20]
+* DONE Enable jit.                                                     :misc:
+  CLOSED: [2017-11-11 Sat 10:24]
+Install numba.
+* DONE Drop categorical variables?                               :preprocess: 
+  CLOSED: [2017-11-11 Sat 12:31]
+Compare target-encoded and original versions first.
+* TODO Set up LightGBM, or set up XGBoost to use tree_type 'leaf' (?). :xgb:
+Can't be done with XGBClassifier.
+* DONE Better metric for nn. Currently accuracy.                         :nn:
+  CLOSED: [2017-11-11 Sat 11:30]
+If can't use better metric, consider upsampling positives. Did that.
+* DONE Change hyperparams.yaml to use upsample=True.                     :nn:
+  CLOSED: [2017-11-11 Sat 12:22]
+* DONE Set up nnBagged.                                                  :nn:
+  CLOSED: [2017-11-11 Sat 12:32]
 * TODO Figure out why early_stopping_rounds=25 causes errors in xgbBagged but not xgb. :xgb:
 * TODO Put early_stopping_rounds=25 back in to xgb's in hyperparams.yaml. (Currently breaks StratifiedBaggingClassifier.) :xgb:
 * DONE Add target_encode.                                     :preprocessing:
@@ -17,14 +45,18 @@
 * DONE Make application of StandardScaler() a pre-processing step. :scaling:
     CLOSED: [2017-11-04 Sat 14:57]
 * TODO Scaler needs to be consistent w.r.t. CV, stacking. :scaling:
-* TODO Set up CV for stratifying. 
+* DONE Set up CV for stratifying.                               :hyperparams:
+  CLOSED: [2017-11-10 Fri 09:44]
+Stratifies automatically.
 * DONE To train, add --cv option for estimating accuracy.              :misc:
   CLOSED: [2017-11-09 Thu 18:58]
 * TODO Figure out if eval_metric: auc does anything when there is no eval_set specified. :xgb:
 * DONE Fix xbgBagged predictions being over 1.                    :xgbBagged:
   CLOSED: [2017-11-09 Thu 18:58]
-* TODO Change DNN parameters from testing parameters. :nn:
+* DONE Change DNN parameters from testing parameters.                    :nn:
+  CLOSED: [2017-11-10 Fri 09:43]
 * DONE Set up DNN.                                                       :nn:
   CLOSED: [2017-11-08 Wed 18:35]
+* TODO Make hyperparameter tuning report error statistics. :hyperparams:
 * TODO Set up xgb.cv with sklearn.StratifiedKFolds. Done, but check what output is. :xgb:
 * TODO Scaling may be over fitting :scaling:

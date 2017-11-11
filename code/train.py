@@ -11,15 +11,20 @@ from utils import datetime_for_filename, eval_gini
 from xgboost import XGBClassifier
 from estimators import NN, XGBoost, TestClassifier, StratifiedBaggingClassifier
 from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_score
+from sklearn.linear_model import LogisticRegression
 
 float_format = '%.8f'
+
+def gini_scoring_fn(estimator, scoring_X, scoring_y):
+    preds = estimator.predict_proba(scoring_X)[:, 1]
+    return eval_gini(y_true=scoring_y, y_prob=preds)
 
 def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
     print('Config file: ' + config_file)
     print('Model: ' + model_name)
     print('Fit hyperparams? ' + str(fit_hyperparams))
     print('Fold for which predictions will be added: ' + str(fold))
-    print('Submission? ' + str(submission))
+    print('Generate submission file? ' + str(submission))
     print('Cross-validate? ' + str(cv))
 
     with open(config_file, 'r') as f:
@@ -34,12 +39,19 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
 
     # The model names and their definitions.
     model_dict = {'nn':NN, 
-                'xgbBagged':toolz.partial(StratifiedBaggingClassifier,
-                                          base_estimator=XGBClassifier(**hyperparams['xgb']['constructor']),
-                                          fit_params=hyperparams['xgb']['fit']),
-                'xgb':toolz.partial(XGBClassifier),
-                'xgbStratified':toolz.partial(XGBoost, stratify=True),
-                'svm':toolz.partial(svm.SVC, probability=True)}
+                  'nnBagged':toolz.partial(StratifiedBaggingClassifier,
+                                           base_estimator=NN(**hyperparams['nn']['constructor']),
+                                           fit_params=hyperparams['nn']['fit']),
+                  'xgbBagged':toolz.partial(StratifiedBaggingClassifier,
+                                            base_estimator=XGBClassifier(**hyperparams['xgb']['constructor']),
+                                            fit_params=hyperparams['xgb']['fit']),
+                  'xgb':toolz.partial(XGBClassifier),
+                  'xgbStratified':toolz.partial(XGBoost, stratify=True),
+                  'svm':toolz.partial(svm.SVC, probability=True),
+                  'logisticRegression':toolz.partial(LogisticRegression, class_weight='balanced'),
+                  'logisticRegressionBagged':toolz.partial(StratifiedBaggingClassifier,
+                                            base_estimator=LogisticRegression(**hyperparams['logisticRegression']['constructor']),
+                                            fit_params=hyperparams['logisticRegression']['fit'])}
 
     if fit_hyperparams:
         # Define model.
@@ -52,22 +64,37 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
         model = model_dict[model_name](**non_tuning_hyperparams)
 
         print('Finding hyperparameters...')
-        n_splits = 5
-        clf = GridSearchCV(model, param_grid=tuning_hyperparams, cv=n_splits,
-                           scoring='roc_auc')
+        n_splits = 3
+        clf = GridSearchCV(model, param_grid=tuning_hyperparams, cv=n_splits, n_jobs=3, verbose=5, scoring='roc_auc')
         X = train_df.drop(['target', 'fold'], axis=1)
         y = train_df.loc[:, 'target']
         clf.fit(X=X, y=y, **hyperparams[model_name]['fit'])
         print('Found best hyperparams:')
         print(clf.best_params_)
+        print('With AUC score:')
+        print(clf.best_score_)
 
         # Put grid search best params in hyperparams dict.
         hyperparams[model_name]['constructor'].update(clf.best_params_)
         # Save hyperparams.
         with open(config['hyperparams_file'], 'w') as f:
-            yaml.dump(hyperparams, f)
+            yaml.dump(hyperparams, f, default_flow_style=False, indent=2)
         print('Wrote best params to ' + str(config['hyperparams_file']))
-    elif submission: # Train and produce submission file.
+
+    if cv: # Cross-validate model to estimate accuracy.
+            # Define model.
+            print('Define model...')
+            model = model_dict[model_name](**hyperparams[model_name]['constructor'])
+            X = train_df.drop(['target', 'fold'], axis=1)
+            y = train_df.loc[:, 'target']
+            n_splits = 5
+            fit_params = hyperparams[model_name]['fit']
+            print("Estimating scores using cross-validation...")
+            scores = cross_val_score(estimator=model, X=X, y=y, cv=n_splits, verbose=5, fit_params=fit_params, scoring=gini_scoring_fn)
+            # Report error.
+            print('Gini score mean (standard deviation): ' + str(np.mean(scores)) + ' (' +  str(np.sqrt(np.var(scores))) + ')')
+
+    if submission: # Train and produce submission file.
         # Define model.
         print('Define model...')
         model = model_dict[model_name](**hyperparams[model_name]['constructor'])
@@ -76,28 +103,13 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
                   y=train_df.loc[:, 'target'])
         # Create submission file with predictions.
         print("Predicting...")
-        submit_file = config['submit_prefix'] + '_' + datetime_for_filename() + '.csv'
+        submit_file = config['submit_prefix'] + '_' + model_name + '_' + datetime_for_filename() + '.csv'
         (test_df
          .assign(target=model.predict_proba(test_df.drop('id', axis=1))[:,1])
          .loc[:, ['id', 'target']]
          .to_csv(submit_file, index=None, float_format=float_format))
         print("Saved submit file to " + submit_file)
-    elif cv: # Cross-validate model to estimate accuracy.
-        # Define model.
-        print('Define model...')
-        model = model_dict[model_name](**hyperparams[model_name]['constructor'])
-        X = train_df.drop(['target', 'fold'], axis=1)
-        y = train_df.loc[:, 'target']
-        n_splits = 5
-        fit_params = hyperparams[model_name]['fit']
-        def gini_scoring_fn(estimator, scoring_X, scoring_y):
-            preds = estimator.predict_proba(scoring_X)[:, 1]
-            return eval_gini(y_true=scoring_y, y_prob=preds)
-        print("Estimating scores using cross-validation...")
-        scores = cross_val_score(estimator=model, X=X, y=y, cv=n_splits, verbose=1, fit_params=fit_params, scoring=gini_scoring_fn)
-        # Report error.
-        print('Gini score mean (standard deviation): ' + str(np.mean(scores)) + ' (' +  str(np.sqrt(np.var(scores))) + ')')
-    else: # Train with folds, for stacking.
+    elif not fold is None: # Train with folds, for stacking.
         # Define model.
         print('Define model...')
         model = model_dict[model_name](**hyperparams[model_name]['constructor'])
@@ -129,11 +141,14 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Fit model.')
     parser.add_argument('config', help='name of config file')
-    parser.add_argument('model', choices=['nn', 'xgb', 'xgbStratified', 'xgbBagged', 'svm'], help='model to fit')
-    g = parser.add_mutually_exclusive_group(required=True)
-    g.add_argument('--hyperparams', action='store_true', help='fit hyperparameters instead of training model')
+    parser.add_argument('model', choices=['nn', 'nnBagged', 'xgb', 'xgbStratified', 'xgbBagged', 'svm', 'logisticRegression', 'logisticRegressionBagged'], help='model to fit')
+    parser.add_argument('--hyperparams', action='store_true', help='fit hyperparameters instead of training model')
+    parser.add_argument('--cv', action='store_true', help='cross-validate file and estimate accuracy')
+    g = parser.add_mutually_exclusive_group(required=False)
     g.add_argument('--fold', default=None, type=int, help='fold for which values will be predicted and added. Set to negative to train on all folds and add to test')
     g.add_argument('--sub', action='store_true', help='fit model and produce submission file')
-    g.add_argument('--cv', action='store_true', help='cross-validate file and estimate accuracy')
     args = parser.parse_args()
-    main(config_file=args.config, model_name=args.model, fit_hyperparams=args.hyperparams, fold=args.fold, submission=args.sub, cv=args.cv)
+    if (not args.hyperparams) and (not args.cv) and (not args.sub) and (args.fold is None):
+        print("At least one of --hyperparams, --cv, --fold or --sub must be specified")
+    else:
+        main(config_file=args.config, model_name=args.model, fit_hyperparams=args.hyperparams, fold=args.fold, submission=args.sub, cv=args.cv)

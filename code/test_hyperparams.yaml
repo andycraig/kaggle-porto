@@ -19,3 +19,17 @@ xgb:
 xgbBagged:
   constructor: {n_estimators: 2}
   fit: {}
+nnBagged:
+  constructor:
+    n_estimators: 2
+  fit: {}
+  tuning_hyperparams: {}
+logisticRegression:
+  constructor: {}
+  fit: {}
+  tuning_hyperparams: {}
+logisticRegressionBagged:
+  constructor:
+    n_estimators: 5
+  fit: {}
+  tuning_hyperparams: {}

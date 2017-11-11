@@ -36,14 +36,22 @@ if not dummy_only:
     # fold: close-to-equal numbers of each fold, in random order.
     fold_vals = np.random.permutation(list(toolz.take(n_rows, itertools.cycle(range(config['n_folds'])))))
 
-    # Add target_encode versions of categorical variables.
-    print("Adding target-encoded versions of categorical variables...")
-    for f in train.columns:
-        if '_cat' in f:
-            new_train_col, new_test_col = target_encode(trn_series=train[f], tst_series=test[f], target=train['target'],
-                                                        min_samples_leaf=200, smoothing=10, noise_level=0)
-            train = train.assign(**{f + '_avg': new_train_col})
-            test = test.assign(**{f + '_avg': new_test_col})
+    # Replace categorical variables with target_encode versions.
+    print("Replacing categorical variables with target_encode versions...")
+    cat_cols = [x for x in train.columns if '_cat' in x]
+    for f in cat_cols:
+        new_train_col, new_test_col = target_encode(trn_series=train[f], tst_series=test[f], target=train['target'],
+                                                    min_samples_leaf=200, smoothing=10, noise_level=0)
+        train = train.assign(**{f + '_avg': new_train_col})
+        test = test.assign(**{f + '_avg': new_test_col})
+    train = train.drop(cat_cols, axis=1)
+    test = test.drop(cat_cols, axis=1)
+
+    # Drop 'calc' variables, as they seem almost completely uncorrelated with anything.
+    print("Dropping calc variables...")
+    calc_cols = [x for x in train.columns if '_calc' in x]
+    train = train.drop(calc_cols, axis=1)
+    test = test.drop(calc_cols, axis=1)
 
     # Fit scaler before adding folds.
     print("Fitting scaler...")

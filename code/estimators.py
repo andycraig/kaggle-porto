@@ -57,11 +57,27 @@ class NN(BaseEstimator, ClassifierMixin):
         self.classes_ = unique_labels(y)
         self.X_, self.y_ = X, y
 
+        upsample = True # Always do for now.
+        if upsample:
+            # Upsample the positives.
+            upsample_indices = np.random.choice(np.where(y == 1)[0], # [0] is necessary because where returns a tuple in this case.
+                                                size=len(y) - sum(y == 0),
+                                                replace=True)
+            extra_X = self.X_[upsample_indices, :]
+            extra_y = self.y_[upsample_indices]
+            X_for_training = np.vstack([self.X_, extra_X])
+            y_for_training = np.hstack([self.y_, self.y_[upsample_indices]])
+        else:
+            X_for_training = self.X_
+            y_for_training = self.y_
+            
         # NN object.
         self.model = keras.models.Sequential()
         self.model.add(keras.layers.Dense(64, activation='relu', input_dim=self.X_.shape[1]))
+        self.model.add(keras.layers.BatchNormalization())
         self.model.add(keras.layers.Dropout(0.5))
         self.model.add(keras.layers.Dense(64, activation='relu'))
+        self.model.add(keras.layers.BatchNormalization())
         self.model.add(keras.layers.Dropout(0.5))
         self.model.add(keras.layers.Dense(1, activation='sigmoid'))
         self.model.compile(loss='binary_crossentropy',
@@ -70,7 +86,7 @@ class NN(BaseEstimator, ClassifierMixin):
         
         # Construct NN.
        # Need targets to be binary matrix of shape (samples, classes).
-        self.model.fit(self.X_, self.y_, epochs=self.epochs, batch_size=self.batch_size)
+        self.model.fit(X_for_training, y_for_training, epochs=self.epochs, batch_size=self.batch_size)
         return self
 
     def predict_proba(self, X):

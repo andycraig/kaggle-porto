@@ -1,6 +1,7 @@
 import datetime
 import pandas as pd
 import numpy as np
+from numba import jit
 
 filesafe_replacements = str.maketrans(" :", "_-")
 
@@ -54,7 +55,7 @@ def target_encode(trn_series=None,
     ft_tst_series.index = tst_series.index
     return add_noise(ft_trn_series, noise_level), add_noise(ft_tst_series, noise_level)
 
-#@jit
+@jit
 def eval_gini(y_true, y_prob):
     """
     Original author CPMP : https://www.kaggle.com/cpmpml
