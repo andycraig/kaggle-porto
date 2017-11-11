@@ -7,10 +7,11 @@ import pandas as pd
 import numpy as np
 import toolz
 from sklearn import svm
+from scipy.stats import randint, uniform
 from utils import datetime_for_filename, eval_gini
 from xgboost import XGBClassifier
 from estimators import NN, XGBoost, TestClassifier, StratifiedBaggingClassifier
-from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_score
+from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_score, RandomizedSearchCV
 from sklearn.linear_model import LogisticRegression
 
 float_format = '%.8f'
@@ -64,8 +65,19 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
         model = model_dict[model_name](**non_tuning_hyperparams)
 
         print('Finding hyperparameters...')
-        n_splits = 3
-        clf = GridSearchCV(model, param_grid=tuning_hyperparams, cv=n_splits, n_jobs=3, verbose=5, scoring='roc_auc')
+        n_splits = 2
+        # Construct distributions from tuning_hyperparams.
+        param_dists = {}
+        for param in tuning_hyperparams:
+            vals = tuning_hyperparams[param]['vals']
+            if tuning_hyperparams[param]['type'] == 'int':
+                param_dists[param] = randint(np.min(vals), np.max(vals) + 1) # randint is like [min, max).
+            elif tuning_hyperparams[param]['type'] == 'float':
+                param_dists[param] = uniform(np.min(vals), np.max(vals))
+            else:
+                raise ValueError("Unexpected tuning parameter type: " + str(tuning_hyperparams[param]['type']))
+        clf = RandomizedSearchCV(model, param_distributions=param_dists,
+                                    n_iter=10, scoring='roc_auc', verbose=5, n_jobs=3, cv=n_splits)
         X = train_df.drop(['target', 'fold'], axis=1)
         y = train_df.loc[:, 'target']
         clf.fit(X=X, y=y, **hyperparams[model_name]['fit'])
@@ -87,10 +99,10 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
             model = model_dict[model_name](**hyperparams[model_name]['constructor'])
             X = train_df.drop(['target', 'fold'], axis=1)
             y = train_df.loc[:, 'target']
-            n_splits = 5
+            n_splits = 3
             fit_params = hyperparams[model_name]['fit']
             print("Estimating scores using cross-validation...")
-            scores = cross_val_score(estimator=model, X=X, y=y, cv=n_splits, verbose=5, fit_params=fit_params, scoring=gini_scoring_fn)
+            scores = cross_val_score(estimator=model, X=X, y=y, cv=n_splits, verbose=5, fit_params=fit_params, scoring=gini_scoring_fn, n_jobs=1)
             # Report error.
             print('Gini score mean (standard deviation): ' + str(np.mean(scores)) + ' (' +  str(np.sqrt(np.var(scores))) + ')')
 

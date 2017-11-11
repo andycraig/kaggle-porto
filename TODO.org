@@ -1,3 +1,9 @@
+* TODO Add option for hyperparameter tuning by validation set.       :tuning:
+Rather than by cross-validation.
+For now, just made 2 folds.
+* DONE Add option for random (Latin hypercube?) selection of points. :tuning:
+  CLOSED: [2017-11-11 Sat 14:12]
+Random for now.
 * DONE Add logistic regression.                                          :lm:
   CLOSED: [2017-11-11 Sat 12:19]
 ** DONE In train.py.

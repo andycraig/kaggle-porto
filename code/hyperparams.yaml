@@ -1,7 +1,7 @@
 nn:
   constructor:
     batch_size: 100
-    epochs: 5
+    epochs: 20
   fit: {}
   tuning_hyperparams: {}
 svm:
@@ -9,13 +9,11 @@ svm:
     C: 0.1
     gamma: 0.1
   fit: {}
-  tuning_hyperparams:
-    gamma: [1e1, 1e0, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5]
-    C: [00.1, 0.1, 1, 10, 100, 1000]
+  tuning_hyperparams: {}
 xgb:
   constructor:
     learning_rate: 0.05
-    silent: 1
+    silent: 0
     seed: 4
     objective: "binary:logistic"
     min_child_weight: 5
@@ -31,8 +29,18 @@ xgb:
     eval_metric: auc
     verbose: True
   tuning_hyperparams:
-    gamma: [1.5, 2, 2.5]
-    learning_rate: [0.05, 0.1]
+    min_child_weight:
+      vals: [4, 6]
+      type: int
+    max_depth:
+      vals: [5, 7]
+      type: int
+    gamma:
+      vals: [1.5, 2.5]
+      type: float
+    learning_rate:
+      vals: [0.05, 0.1]
+      type: float
 xgbBagged:
   constructor:
     n_estimators: 5
