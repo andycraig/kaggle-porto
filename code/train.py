@@ -90,9 +90,15 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
         print(clf.best_score_)
 
         # Put grid search best params in hyperparams dict.
+        # Floats are in numpy format, and trying to write them as-is to file
+        # causes it to be filled with junk, so convert to normal float first if
+        # necessary.
         for param, value in clf.best_params_.items():
-            print("For param " + str(param) + ", value was: " + str(value))
-            hyperparams[model_name]['constructor'][param] = value
+            try:
+                sanitised_value = value.item() # Gets number from numpy class.
+            except AttributeError as e: # Was plain number anyway.
+                sanitised_value = value
+            hyperparams[model_name]['constructor'][param] = sanitised_value
         # Save hyperparams.
         with open(config['hyperparams_file'], 'w') as f:
             yaml.dump(hyperparams, f, default_flow_style=False, indent=2)

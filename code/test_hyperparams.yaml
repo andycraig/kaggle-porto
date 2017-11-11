@@ -19,35 +19,20 @@ nnBagged:
   tuning_hyperparams: {}
 svm:
   constructor:
-    C: !!python/object/apply:numpy.core.multiarray.scalar
-    - !!python/object/apply:numpy.dtype
-      args:
-      - f8
-      - 0
-      - 1
-      state: !!python/tuple
-      - 3
-      - <
-      - null
-      - null
-      - null
-      - -1
-      - -1
-      - 0
-    - !!binary |
-      RFqgQZ8ViEA=
-    gamma: 0.1
+    C: 975.1746489845264
+    gamma: 0
   fit: {}
   tuning_hyperparams:
     C:
       type: float
       vals:
       - 0.1
-      - 0.1
-      - 1
-      - 10
-      - 100
       - 1000
+    gamma:
+      type: int
+      vals:
+      - 0
+      - 1
 xgb:
   constructor:
     colsample_bylevel: 0.9
