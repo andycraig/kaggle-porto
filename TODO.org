@@ -4,6 +4,7 @@ For now, just made 2 folds.
 * DONE Add option for random (Latin hypercube?) selection of points. :tuning:
   CLOSED: [2017-11-11 Sat 14:12]
 Random for now.
+* TODO Make selection of parameters log-based. :tuning:
 * DONE Add logistic regression.                                          :lm:
   CLOSED: [2017-11-11 Sat 12:19]
 ** DONE In train.py.

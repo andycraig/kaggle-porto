@@ -70,10 +70,13 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
         param_dists = {}
         for param in tuning_hyperparams:
             vals = tuning_hyperparams[param]['vals']
+            min = np.min(vals)
+            max = np.max(vals)
+            print("For param " + param + ", fitting over range: " + str(min) + ", " + str(max))
             if tuning_hyperparams[param]['type'] == 'int':
-                param_dists[param] = randint(np.min(vals), np.max(vals) + 1) # randint is like [min, max).
+                param_dists[param] = randint(min, max + 1) # randint is like [min, max).
             elif tuning_hyperparams[param]['type'] == 'float':
-                param_dists[param] = uniform(np.min(vals), np.max(vals))
+                param_dists[param] = uniform(loc=min, scale=(max - min))
             else:
                 raise ValueError("Unexpected tuning parameter type: " + str(tuning_hyperparams[param]['type']))
         clf = RandomizedSearchCV(model, param_distributions=param_dists,
@@ -87,7 +90,9 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
         print(clf.best_score_)
 
         # Put grid search best params in hyperparams dict.
-        hyperparams[model_name]['constructor'].update(clf.best_params_)
+        for param, value in clf.best_params_.items():
+            print("For param " + str(param) + ", value was: " + str(value))
+            hyperparams[model_name]['constructor'][param] = value
         # Save hyperparams.
         with open(config['hyperparams_file'], 'w') as f:
             yaml.dump(hyperparams, f, default_flow_style=False, indent=2)

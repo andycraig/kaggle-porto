@@ -1,7 +1,21 @@
+logisticRegression:
+  constructor: {}
+  fit: {}
+  tuning_hyperparams: {}
+logisticRegressionBagged:
+  constructor:
+    n_estimators: 5
+  fit: {}
+  tuning_hyperparams: {}
 nn:
   constructor:
     batch_size: 100
     epochs: 20
+  fit: {}
+  tuning_hyperparams: {}
+nnBagged:
+  constructor:
+    n_estimators: 5
   fit: {}
   tuning_hyperparams: {}
 svm:
@@ -12,50 +26,44 @@ svm:
   tuning_hyperparams: {}
 xgb:
   constructor:
-    learning_rate: 0.05
-    silent: 0
-    seed: 4
-    objective: "binary:logistic"
-    min_child_weight: 5
-    colsample_bytree: 0.8
     colsample_bylevel: 0.9
-    max_depth: 6
-    subsample: 0.9
+    colsample_bytree: 0.8
+    gamma: 1.7544
+    learning_rate: 0.11692
     max_delta_step: 10
-    gamma: 2
+    max_depth: 4
+    min_child_weight: 3
+    objective: binary:logistic
     reg_alpha: 0
     reg_lambda: 1
+    seed: 4
+    silent: 1
+    subsample: 0.9
   fit:
     eval_metric: auc
-    verbose: True
+    verbose: true
   tuning_hyperparams:
-    min_child_weight:
-      vals: [4, 6]
-      type: int
-    max_depth:
-      vals: [5, 7]
-      type: int
     gamma:
-      vals: [1.5, 2.5]
       type: float
+      vals:
+      - 1.5
+      - 2.5
     learning_rate:
-      vals: [0.05, 0.1]
       type: float
+      vals:
+      - 0.05
+      - 0.15
+    max_depth:
+      type: int
+      vals:
+      - 3
+      - 7
+    min_child_weight:
+      type: int
+      vals:
+      - 3
+      - 7
 xgbBagged:
-  constructor:
-    n_estimators: 5
-  fit: {}
-  tuning_hyperparams: {}
-nnBagged:
-  constructor:
-    n_estimators: 5
-  fit: {}
-  tuning_hyperparams: {}
-logisticRegression:
-  constructor: {}
-  fit: {}
-  tuning_hyperparams: {}
-logisticRegressionBagged:
   constructor:
     n_estimators: 5
   fit: {}
