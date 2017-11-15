@@ -1,15 +1,9 @@
-import datetime
+import datetime, pickle
 import pandas as pd
 import numpy as np
 from numba import jit
 
 filesafe_replacements = str.maketrans(" :", "_-")
-
-def save_data(df, f):
-    df.to_csv(f, index=False)
-
-def load_data(f):
-    return pd.read_csv(f)
 
 def datetime_for_filename():
     return str(datetime.datetime.now()).translate(filesafe_replacements)

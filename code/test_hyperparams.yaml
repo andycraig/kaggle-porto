@@ -11,6 +11,7 @@ nn:
   constructor:
     batch_size: 10
     epochs: 1
+    hidden_layers: [1]
   fit: {}
 nnBagged:
   constructor:

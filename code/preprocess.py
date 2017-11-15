@@ -6,7 +6,7 @@ import toolz
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-from utils import target_encode, save_data
+from utils import target_encode
 
 
 with open('config.yaml', 'r') as f:
@@ -66,14 +66,14 @@ if not dummy_only:
     .drop('target', axis=1)
     .pipe(scale_df)
     .assign(fold=fold_vals, target=targets) # Add stacking folds to train, and re-attach unscaled targets.
-    .pipe(save_data, config['train']))
+    .to_pickle(config['train']))
 
     print("Scaling test...")
     ids = test.loc[:, 'id'] # Need these for creating submission files.
     (test.drop('id', axis=1)
     .pipe(scale_df)
     .assign(id=ids)
-    .pipe(save_data, config['test']))
+    .to_pickle(config['test']))
 
 # Create dummy files for testing.
 with open('test_config.yaml', 'r') as f:
@@ -81,15 +81,15 @@ with open('test_config.yaml', 'r') as f:
 
 # Train: Take a sample of the rows from each fold.
 print("Preparing dummy train data...")
-(pd.read_csv(config['train'])
+(pd.read_pickle(config['train'])
  .groupby(['fold', 'target'])
  .apply(lambda x: x.sample(n=10))
- .pipe(save_data, test_config['train']))
+ .to_pickle(test_config['train']))
 
 # Test: Take the first few rows.
 print("Preparing dummy test data...")
-(pd.read_csv(config['test'])
+(pd.read_pickle(config['test'])
  .loc[1:20, :]
- .save_data(test_config['test']))
+ .to_pickle(test_config['test']))
 
 print("Done.")

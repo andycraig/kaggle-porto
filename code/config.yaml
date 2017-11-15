@@ -1,7 +1,7 @@
 train_original: ../data/train.csv
 test_original: ../data/test.csv
-train: ../generated-files/train.csv
-test: ../generated-files/test.csv
+train: ../generated-files/train.pkl
+test: ../generated-files/test.pkl
 submit_prefix: ../submissions/submit
 hyperparams_file: hyperparams.yaml
 n_folds: 5

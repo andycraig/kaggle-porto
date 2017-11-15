@@ -8,12 +8,13 @@ import numpy as np
 import toolz
 from sklearn import svm
 from scipy.stats import randint, uniform
-from utils import datetime_for_filename, eval_gini, load_data, save_data
+from utils import datetime_for_filename, eval_gini
 from xgboost import XGBClassifier
 from estimators import NN, XGBoost, TestClassifier, StratifiedBaggingClassifier
 from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_score, RandomizedSearchCV
 from sklearn.linear_model import LogisticRegression
 
+float_format = '%.8f'
 
 def gini_scoring_fn(estimator, scoring_X, scoring_y):
     preds = estimator.predict_proba(scoring_X)[:, 1]
@@ -34,8 +35,8 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
         
     # Load data.
     print('Loading data...')
-    train_df = load_data(config['train'])
-    test_df = load_data(config['test'])
+    train_df = pd.read_pickle(config['train'])
+    test_df = pd.read_pickle(config['test'])
 
     # The model names and their definitions.
     model_dict = {'nn':NN, 
@@ -129,7 +130,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
         (test_df
          .assign(target=model.predict_proba(test_df.drop('id', axis=1))[:,1])
          .loc[:, ['id', 'target']]
-         .pipe(save_data, submit_file))
+         .to_csv(submit_file, float_format=float_format))
         print("Saved submit file to " + submit_file)
     elif not fold is None: # Train with folds, for stacking.
         # Define model.
@@ -146,7 +147,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
             if not model_col_name in train_df:
                 train_df = train_df.assign(model_col_name=np.nan)
             train_df.loc[train_df['fold'] == fold, model_col_name] = model.predict_proba(train_df.loc[train_df['fold'] == fold, :])[:,1]
-            train_df.pipe(save_data, config['train_set'])
+            train_df.to_pickle(config['train'])
             print('Added predictions for model ' + model_name + ', fold ' + str(fold) + ' to column ' + model_col_name + ' of ' +  config['train'])
         else: # Ignore folds and fit all data.
             print('Fitting...')
@@ -157,7 +158,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
             test_file = config['test']
             (test_df
              .assign(model_col_name=model.predict_proba(test_df)[:,1])
-             .pipe(save_data, test_file))
+             .to_pickle(test_file))
             print('Added predictions for model ' + model_name + ' to column ' + model_col_name + ' of ' + test_file)
 
 if __name__ == "__main__":

@@ -5,7 +5,8 @@ For now, just made 2 folds.
   CLOSED: [2017-11-11 Sat 14:12]
 Random for now.
 * TODO Make selection of parameters log-based. :tuning:
-* TODO Refactor out loading of data, and have it done by pickle for speed. :misc:
+* DONE Refactor out loading of data, and have it done by pickle for speed. :misc:
+  CLOSED: [2017-11-15 Wed 18:27]
 * DONE Add logistic regression.                                          :lm:
   CLOSED: [2017-11-11 Sat 12:19]
 ** DONE In train.py.
