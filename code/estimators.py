@@ -45,9 +45,10 @@ class TestClassifier(BaseEstimator, ClassifierMixin):
 # NN classifier
 class NN(BaseEstimator, ClassifierMixin):
 
-    def __init__(self, epochs, batch_size):
+    def __init__(self, epochs, batch_size, hidden_layers):
         self.epochs = epochs
         self.batch_size = batch_size
+        self.hidden_layers = hidden_layers
  
     def fit(self, X, y):
 
@@ -73,11 +74,11 @@ class NN(BaseEstimator, ClassifierMixin):
             
         # NN object.
         self.model = keras.models.Sequential()
-        self.model.add(keras.layers.Dense(128, activation='relu', input_dim=self.X_.shape[1]))
+        self.model.add(keras.layers.Dense(self.hidden_layers[0], activation='relu', input_dim=self.X_.shape[1]))
         self.model.add(keras.layers.BatchNormalization())
         self.model.add(keras.layers.Dropout(0.5))
-        for i_layer in range(1,5):
-            self.model.add(keras.layers.Dense(128, activation='relu'))
+        for layer in self.hidden_layers[1:]:
+            self.model.add(keras.layers.Dense(layer, activation='relu'))
             self.model.add(keras.layers.BatchNormalization())
             self.model.add(keras.layers.Dropout(0.5))
         self.model.add(keras.layers.Dense(1, activation='sigmoid'))

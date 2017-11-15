@@ -9,8 +9,9 @@ logisticRegressionBagged:
   tuning_hyperparams: {}
 nn:
   constructor:
-    batch_size: 100
-    epochs: 20
+    batch_size: 10000
+    epochs: 100
+    hidden_layers: [32, 64]
   fit: {}
   tuning_hyperparams: {}
 nnBagged:
@@ -67,4 +68,9 @@ xgbBagged:
   constructor:
     n_estimators: 5
   fit: {}
-  tuning_hyperparams: {}
+  tuning_hyperparams: 
+    n_estimators:
+      type: int
+      vals:
+      - 5
+      - 10

@@ -5,13 +5,15 @@ For now, just made 2 folds.
   CLOSED: [2017-11-11 Sat 14:12]
 Random for now.
 * TODO Make selection of parameters log-based. :tuning:
+* TODO Refactor out loading of data, and have it done by pickle for speed. :misc:
 * DONE Add logistic regression.                                          :lm:
   CLOSED: [2017-11-11 Sat 12:19]
 ** DONE In train.py.
    CLOSED: [2017-11-11 Sat 12:06]
 ** DONE In hyperparams.yaml.
    CLOSED: [2017-11-11 Sat 12:19]
-* Do something about missing values in train. :preprocess:
+* TODO Put layers in hyperparams.yaml. :nn:
+* TODO Do something about missing values in train.               :preprocess:
 * TODO Set so can train multiple folds in one call of train.py. :misc:
 * DONE Add bagged logistic regression.                                   :lm:
   CLOSED: [2017-11-11 Sat 12:19]
