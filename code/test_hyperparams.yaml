@@ -67,3 +67,7 @@ xgbHist:
     tree_method: gpu_hist
   fit: {}
   tuning_hyperparams: {}
+randomForest:
+  constructor: {}
+  fit: {}
+  tuning_hyperparams: {}

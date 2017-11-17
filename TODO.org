@@ -1,4 +1,5 @@
-* TODO Try RandomForestClassifier. :randomForest:
+* DONE Try RandomForestClassifier.                             :randomForest:
+  CLOSED: [2017-11-17 Fri 09:02]
 * TODO Try ExtraTreesClassifier. :extraTrees:
 * TODO Try linear tree. 
 * TODO Tune with min_child_weight allowed to go down to 2. :xgb:
@@ -33,8 +34,10 @@ Install numba.
 * DONE Drop categorical variables?                               :preprocess: 
   CLOSED: [2017-11-11 Sat 12:31]
 Compare target-encoded and original versions first.
-* TODO Move XGBoost estimator fit_params to parameters to fit(). :xgb:
-* TODO Set up xgbHist for hyperparameter training. :xgb:
+* DONE Move XGBoost estimator fit_params to parameters to fit().        :xgb:
+  CLOSED: [2017-11-17 Fri 08:56]
+* DONE Set up xgbHist for hyperparameter training.                      :xgb:
+  CLOSED: [2017-11-17 Fri 08:56]
 * DONE Set up LightGBM, or set up XGBoost to use 'tree_method':'gpu_hist'. :xgb:
   CLOSED: [2017-11-17 Fri 08:33]
 Can't be done with XGBClassifier.

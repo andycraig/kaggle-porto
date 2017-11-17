@@ -13,6 +13,7 @@ from xgboost import XGBClassifier
 from estimators import NN, XGBoost, TestClassifier, StratifiedBaggingClassifier
 from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_score, RandomizedSearchCV
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 
 float_format = '%.8f'
 
@@ -50,6 +51,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
                   'xgbHist':toolz.partial(XGBoost),
                   'xgbStratified':toolz.partial(XGBoost, stratify=True),
                   'svm':toolz.partial(svm.SVC, probability=True),
+                  'randomForest':toolz.partial(RandomForestClassifier),
                   'logisticRegression':toolz.partial(LogisticRegression, class_weight='balanced'),
                   'logisticRegressionBagged':toolz.partial(StratifiedBaggingClassifier,
                                             base_estimator=LogisticRegression(**hyperparams['logisticRegression']['constructor']),
@@ -165,7 +167,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Fit model.')
     parser.add_argument('config', help='name of config file')
-    parser.add_argument('model', choices=['nn', 'nnBagged', 'xgb', 'xgbStratified', 'xgbBagged', 'svm', 'logisticRegression', 'logisticRegressionBagged', 'xgbHist'], help='model to fit')
+    parser.add_argument('model', choices=['nn', 'nnBagged', 'xgb', 'xgbStratified', 'xgbBagged', 'svm', 'logisticRegression', 'logisticRegressionBagged', 'xgbHist', 'randomForest'], help='model to fit')
     parser.add_argument('--hyperparams', action='store_true', help='fit hyperparameters instead of training model')
     parser.add_argument('--cv', action='store_true', help='cross-validate file and estimate accuracy')
     g = parser.add_mutually_exclusive_group(required=False)

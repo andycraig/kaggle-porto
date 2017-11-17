@@ -122,4 +122,7 @@ xgbHist:
       vals:
       - 1
       - 30
- 
+randomForest:
+  constructor: {}
+  fit: {}
+  tuning_hyperparams: {}
