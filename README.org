@@ -24,7 +24,7 @@ Dummy data only:
 ~python preprocess.py --dummy~
 
 *** Fit models
-Models are: xgb, xgbBagged, xgbStratified, nn, nnBagged, svm, logisticRegression, logisticRegressionBagged
+Models are: xgb, xgbHist, xgbBagged, xgbStratified, nn, nnBagged, svm, logisticRegression, logisticRegressionBagged
 
 Folds are: 0, ..., 4
 

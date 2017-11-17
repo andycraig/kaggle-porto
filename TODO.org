@@ -17,7 +17,8 @@ Random for now.
    CLOSED: [2017-11-11 Sat 12:06]
 ** DONE In hyperparams.yaml.
    CLOSED: [2017-11-11 Sat 12:19]
-* TODO Put layers in hyperparams.yaml. :nn:
+* DONE Put layers in hyperparams.yaml.                                   :nn:
+  CLOSED: [2017-11-17 Fri 08:54]
 * TODO Do something about missing values in train.               :preprocess:
 * TODO Set so can train multiple folds in one call of train.py. :misc:
 * DONE Add bagged logistic regression.                                   :lm:
@@ -32,6 +33,7 @@ Install numba.
 * DONE Drop categorical variables?                               :preprocess: 
   CLOSED: [2017-11-11 Sat 12:31]
 Compare target-encoded and original versions first.
+* TODO Move XGBoost estimator fit_params to parameters to fit(). :xgb:
 * TODO Set up xgbHist for hyperparameter training. :xgb:
 * DONE Set up LightGBM, or set up XGBoost to use 'tree_method':'gpu_hist'. :xgb:
   CLOSED: [2017-11-17 Fri 08:33]

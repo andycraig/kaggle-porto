@@ -47,7 +47,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
                                             base_estimator=XGBClassifier(**hyperparams['xgb']['constructor']),
                                             fit_params=hyperparams['xgb']['fit']),
                   'xgb':toolz.partial(XGBClassifier),
-                  'xgbHist':toolz.partial(XGBoost, stratify=True),
+                  'xgbHist':toolz.partial(XGBoost),
                   'xgbStratified':toolz.partial(XGBoost, stratify=True),
                   'svm':toolz.partial(svm.SVC, probability=True),
                   'logisticRegression':toolz.partial(LogisticRegression, class_weight='balanced'),

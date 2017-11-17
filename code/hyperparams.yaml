@@ -88,7 +88,38 @@ xgbBagged:
       - 10
 xgbHist:
   constructor: 
-    params:
-      tree_method: gpu_hist
+    tree_method: gpu_hist
+    eta: 0.3
+    min_child_weight: 1
+    max_depth: 6
+    max_leaf_nodes: 4
+    gamma: 0
+    max_delta_step: 0
+    subsample: 1
+    colsample_bytree: 1
+    colsample_bylevel: 1
+    alpha: 0
+    lambda: 1
   fit: {}
-  tuning_hyperparams: {}
+  tuning_hyperparams:
+    gamma:
+      type: float
+      vals:
+      - 0
+      - 5
+    learning_rate:
+      type: float
+      vals:
+      - 0.05
+      - 0.15
+    max_depth:
+      type: int
+      vals:
+      - 1
+      - 30
+    min_child_weight:
+      type: int
+      vals:
+      - 1
+      - 30
+ 

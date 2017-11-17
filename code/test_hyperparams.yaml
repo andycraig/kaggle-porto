@@ -64,7 +64,6 @@ lasso:
   tuning_hyperparams: {}
 xgbHist:
   constructor: 
-    params:
-      tree_method: gpu_hist
+    tree_method: gpu_hist
   fit: {}
   tuning_hyperparams: {}

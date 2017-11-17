@@ -112,28 +112,23 @@ class XGBoost(BaseEstimator, ClassifierMixin):
                  eval_metric="auc", 
                  n_folds=None,
                  stratify=False,
-                 params=None,
-                 fit_params=None,
                  **kwargs):
         """
         @param n_folds: Number of folds on which to cross-validate. None to train with xgb.train instead of xgb.cv.
         @param stratify: True to preserve positive/negative ratio within folds.
-        @param kwargs: Additional parameters. Currently unused, except to absorb parameter 'scoring'.
+        @param kwargs: Parameters that will be passed to params argument of xgb.train().
         """
-        if params is None:
-            self.params = {}
-        else:
-            self.params = params
-        if fit_params is None:
-            self.fit_params = {}
-        else:
-            self.fit_params = fit_params
+        if (n_folds is None) and (stratify):
+            raise ValueError("XGBoost estimator cannot have n_folds None and stratify True.")
         self.n_folds = n_folds
         self.stratify = stratify
+        self.params = kwargs
         self.model, self.X_, self.y_, self.classes_ = None, None, None, None
 
-    def fit(self, X, y):
-
+    def fit(self, X, y, **kwargs):
+        """
+            @kwargs: Other arguments to be passed to xgb.train().
+        """
         # Check that X and y have correct shape
         X, y = check_X_y(X, y)
         # Store the classes seen during fit
@@ -142,19 +137,18 @@ class XGBoost(BaseEstimator, ClassifierMixin):
 
         xgtrain = xgb.DMatrix(self.X_, label=self.y_)
 
-        kwargs = dict(params=self.params, 
+        train_kwargs = dict(params=self.params, 
                       dtrain=xgtrain, 
                       evals=[(xgtrain,'train')],
-                      **self.fit_params)
+                      **kwargs)
         if self.n_folds is None:
-            self.model = xgb.train(**kwargs)
+            self.model = xgb.train(**train_kwargs)
         else:
             if stratify:
                 stratifiedKFolds = stratifiedKFolds(self.y_, n_folds=self.n_folds)
-                self.model = xgb.cv(folds=stratifiedKFolds, **kwargs)
+                self.model = xgb.cv(folds=stratifiedKFolds, **train_kwargs)
             else:
-                self.model = xgb.cv(nfold=self.n_folds, **kwargs)
-
+                self.model = xgb.cv(nfold=self.n_folds, **train_kwargs)
         return self
 
     def predict_proba(self, X):
