@@ -1,7 +1,17 @@
-logisticRegression:
+lasso:
   constructor: {}
   fit: {}
   tuning_hyperparams: {}
+logisticRegression:
+  constructor:
+    C: 0.21808262011647106
+  fit: {}
+  tuning_hyperparams:
+    C:
+      type: float
+      vals:
+      - 0
+      - 1
 logisticRegressionBagged:
   constructor:
     n_estimators: 5
@@ -10,8 +20,10 @@ logisticRegressionBagged:
 nn:
   constructor:
     batch_size: 10000
-    epochs: 100
-    hidden_layers: [32, 64]
+    dropout: -1
+    epochs: 1000
+    hidden_layers:
+    - 32
   fit: {}
   tuning_hyperparams: {}
 nnBagged:
@@ -62,15 +74,21 @@ xgb:
     min_child_weight:
       type: int
       vals:
-      - 3
+      - 1
       - 7
 xgbBagged:
   constructor:
     n_estimators: 5
   fit: {}
-  tuning_hyperparams: 
+  tuning_hyperparams:
     n_estimators:
       type: int
       vals:
       - 5
       - 10
+xgbHist:
+  constructor: 
+    params:
+      tree_method: gpu_hist
+  fit: {}
+  tuning_hyperparams: {}

@@ -12,6 +12,7 @@ nn:
     batch_size: 10
     epochs: 1
     hidden_layers: [1]
+    dropout: -1
   fit: {}
 nnBagged:
   constructor:
@@ -57,3 +58,13 @@ xgbBagged:
   constructor:
     n_estimators: 2
   fit: {}
+lasso:
+  constructor: {}
+  fit: {}
+  tuning_hyperparams: {}
+xgbHist:
+  constructor: 
+    params:
+      tree_method: gpu_hist
+  fit: {}
+  tuning_hyperparams: {}

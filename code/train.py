@@ -47,6 +47,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
                                             base_estimator=XGBClassifier(**hyperparams['xgb']['constructor']),
                                             fit_params=hyperparams['xgb']['fit']),
                   'xgb':toolz.partial(XGBClassifier),
+                  'xgbHist':toolz.partial(XGBoost, stratify=True),
                   'xgbStratified':toolz.partial(XGBoost, stratify=True),
                   'svm':toolz.partial(svm.SVC, probability=True),
                   'logisticRegression':toolz.partial(LogisticRegression, class_weight='balanced'),
@@ -164,7 +165,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Fit model.')
     parser.add_argument('config', help='name of config file')
-    parser.add_argument('model', choices=['nn', 'nnBagged', 'xgb', 'xgbStratified', 'xgbBagged', 'svm', 'logisticRegression', 'logisticRegressionBagged'], help='model to fit')
+    parser.add_argument('model', choices=['nn', 'nnBagged', 'xgb', 'xgbStratified', 'xgbBagged', 'svm', 'logisticRegression', 'logisticRegressionBagged', 'xgbHist'], help='model to fit')
     parser.add_argument('--hyperparams', action='store_true', help='fit hyperparameters instead of training model')
     parser.add_argument('--cv', action='store_true', help='cross-validate file and estimate accuracy')
     g = parser.add_mutually_exclusive_group(required=False)

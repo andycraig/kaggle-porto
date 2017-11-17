@@ -45,10 +45,14 @@ class TestClassifier(BaseEstimator, ClassifierMixin):
 # NN classifier
 class NN(BaseEstimator, ClassifierMixin):
 
-    def __init__(self, epochs, batch_size, hidden_layers):
+    def __init__(self, epochs, batch_size, hidden_layers, dropout):
         self.epochs = epochs
         self.batch_size = batch_size
         self.hidden_layers = hidden_layers
+        if dropout < 0:
+            self.dropout = None
+        else:
+            self.dropout = dropout
  
     def fit(self, X, y):
 
@@ -76,11 +80,13 @@ class NN(BaseEstimator, ClassifierMixin):
         self.model = keras.models.Sequential()
         self.model.add(keras.layers.Dense(self.hidden_layers[0], activation='relu', input_dim=self.X_.shape[1]))
         self.model.add(keras.layers.BatchNormalization())
-        self.model.add(keras.layers.Dropout(0.5))
+        if not self.dropout is None:
+            self.model.add(keras.layers.Dropout(self.dropout))
         for layer in self.hidden_layers[1:]:
             self.model.add(keras.layers.Dense(layer, activation='relu'))
             self.model.add(keras.layers.BatchNormalization())
-            self.model.add(keras.layers.Dropout(0.5))
+            if not self.dropout is None:
+                self.model.add(keras.layers.Dropout(self.dropout))
         self.model.add(keras.layers.Dense(1, activation='sigmoid'))
         self.model.compile(loss='binary_crossentropy',
                            optimizer='sgd',
