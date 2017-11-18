@@ -1,3 +1,7 @@
+lasso:
+  constructor: {}
+  fit: {}
+  tuning_hyperparams: {}
 logisticRegression:
   constructor: {}
   fit: {}
@@ -10,18 +14,23 @@ logisticRegressionBagged:
 nn:
   constructor:
     batch_size: 10
-    epochs: 1
-    hidden_layers: [1]
     dropout: -1
+    epochs: 1
+    hidden_layers:
+    - 1
   fit: {}
 nnBagged:
   constructor:
     n_estimators: 2
   fit: {}
   tuning_hyperparams: {}
+randomForest:
+  constructor: {}
+  fit: {}
+  tuning_hyperparams: {}
 svm:
   constructor:
-    C: 975.1746489845264
+    C: 865.709432428989
     gamma: 0
   fit: {}
   tuning_hyperparams:
@@ -35,11 +44,21 @@ svm:
       vals:
       - 0
       - 1
+test:
+  constructor:
+    v: 0.6977709912591094
+  fit: {}
+  tuning_hyperparams:
+    v:
+      type: float
+      vals:
+      - 0
+      - 1
 xgb:
   constructor:
     colsample_bylevel: 0.9
     colsample_bytree: 0.8
-    gamma: 2.5
+    gamma: 2.085847249121714
     learning_rate: 0.05
     max_delta_step: 10
     max_depth: 5
@@ -53,21 +72,24 @@ xgb:
   fit:
     eval_metric: auc
     verbose: true
-  tuning_hyperparams: {}
+  tuning_hyperparams:
+    gamma:
+      type: float
+      vals:
+      - 0
+      - 4
 xgbBagged:
   constructor:
     n_estimators: 2
   fit: {}
-lasso:
-  constructor: {}
-  fit: {}
-  tuning_hyperparams: {}
 xgbHist:
-  constructor: 
+  constructor:
+    gamma: 0.5039375842491984
     tree_method: gpu_hist
   fit: {}
-  tuning_hyperparams: {}
-randomForest:
-  constructor: {}
-  fit: {}
-  tuning_hyperparams: {}
+  tuning_hyperparams:
+    gamma:
+      type: float
+      vals:
+      - 0
+      - 4

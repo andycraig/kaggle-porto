@@ -1,3 +1,5 @@
+* TODO Find out what best predictive features are. :misc:
+* TODO Set up hyperparams for RandomForestClassifier. :randomForest:
 * DONE Try RandomForestClassifier.                             :randomForest:
   CLOSED: [2017-11-17 Fri 09:02]
 * TODO Try ExtraTreesClassifier. :extraTrees:

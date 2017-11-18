@@ -1,5 +1,6 @@
 # Estimators
 
+import sys
 import numpy as np
 import pandas as pd
 import toolz
@@ -18,8 +19,8 @@ from sklearn.decomposition import PCA
 # Test classifier
 class TestClassifier(BaseEstimator, ClassifierMixin):
 
-    def __init__(self, demo_param='demo'):
-        self.demo_param = demo_param
+    def __init__(self, v=1):
+        self.v = v
 
     def fit(self, X, y):
 
@@ -40,6 +41,15 @@ class TestClassifier(BaseEstimator, ClassifierMixin):
 
         closest = np.argmin(euclidean_distances(X, self.X_), axis=1)
         return self.y_[closest]
+
+    def predict_proba(self, X):
+
+        # Input validation
+        check_is_fitted(self, ['X_', 'y_'])
+        X = check_array(X)
+        pred_one = [1 - self.v, self.v]
+        y_pred = np.repeat(np.array([pred_one]), len(X), axis=0)
+        return y_pred
 
 
 # NN classifier
@@ -107,22 +117,34 @@ class NN(BaseEstimator, ClassifierMixin):
         return preda
 
 # XGBoost classifier
-class XGBoost(BaseEstimator, ClassifierMixin):
+class XGBoostWrapper(BaseEstimator, ClassifierMixin):
     def __init__(self, 
                  eval_metric="auc", 
-                 n_folds=None,
-                 stratify=False,
-                 **kwargs):
-        """
-        @param n_folds: Number of folds on which to cross-validate. None to train with xgb.train instead of xgb.cv.
-        @param stratify: True to preserve positive/negative ratio within folds.
-        @param kwargs: Parameters that will be passed to params argument of xgb.train().
-        """
-        if (n_folds is None) and (stratify):
-            raise ValueError("XGBoost estimator cannot have n_folds None and stratify True.")
-        self.n_folds = n_folds
-        self.stratify = stratify
-        self.params = kwargs
+                 tree_method='auto',
+                 learning_rate=0.3,
+                 min_child_weight=1,
+                 max_depth=6,
+                 max_leaf_nodes=4,
+                 gamma=0,
+                 max_delta_step=0,
+                 subsample=1,
+                 colsample_bytree=1,
+                 colsample_bylevel=1,
+                 reg_alpha=0,
+                 reg_lambda=1):
+        self.eval_metric = eval_metric
+        self.tree_method = tree_method
+        self.learning_rate = learning_rate
+        self.min_child_weight = min_child_weight
+        self.max_depth = max_depth
+        self.max_leaf_nodes = max_leaf_nodes
+        self.gamma = gamma
+        self.max_delta_step = max_delta_step
+        self.subsample = subsample
+        self.colsample_bytree = colsample_bytree
+        self.colsample_bylevel = colsample_bylevel
+        self.reg_alpha = reg_alpha
+        self.reg_lambda = reg_lambda
         self.model, self.X_, self.y_, self.classes_ = None, None, None, None
 
     def fit(self, X, y, **kwargs):
@@ -137,18 +159,24 @@ class XGBoost(BaseEstimator, ClassifierMixin):
 
         xgtrain = xgb.DMatrix(self.X_, label=self.y_)
 
-        train_kwargs = dict(params=self.params, 
-                      dtrain=xgtrain, 
-                      evals=[(xgtrain,'train')],
-                      **kwargs)
-        if self.n_folds is None:
-            self.model = xgb.train(**train_kwargs)
-        else:
-            if stratify:
-                stratifiedKFolds = stratifiedKFolds(self.y_, n_folds=self.n_folds)
-                self.model = xgb.cv(folds=stratifiedKFolds, **train_kwargs)
-            else:
-                self.model = xgb.cv(nfold=self.n_folds, **train_kwargs)
+        params = {  'eval_metric':self.eval_metric,
+                    'tree_method':self.tree_method,
+                    'eta':self.learning_rate,
+                    'min_child_weight':self.min_child_weight,
+                    'max_depth':self.max_depth,
+                    'max_leaf_nodes':self.max_leaf_nodes,
+                    'gamma':self.gamma,
+                    'max_delta_step':self.max_delta_step,
+                    'subsample':self.subsample,
+                    'colsample_bytree':self.colsample_bytree,
+                    'colsample_bylevel':self.colsample_bylevel,
+                    'alpha':self.reg_alpha,
+                    'lambda':self.reg_lambda}
+                               
+        self.model = xgb.train(params=params,
+                               dtrain=xgtrain,
+                               evals=[(xgtrain,'train')],
+                               **kwargs)
         return self
 
     def predict_proba(self, X):

@@ -10,7 +10,7 @@ from sklearn import svm
 from scipy.stats import randint, uniform
 from utils import datetime_for_filename, eval_gini
 from xgboost import XGBClassifier
-from estimators import NN, XGBoost, TestClassifier, StratifiedBaggingClassifier
+from estimators import NN, XGBoostWrapper, TestClassifier, StratifiedBaggingClassifier
 from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_score, RandomizedSearchCV
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
@@ -40,16 +40,16 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
     test_df = pd.read_pickle(config['test'])
 
     # The model names and their definitions.
-    model_dict = {'nn':NN, 
+    model_dict = {'test':TestClassifier,
+                  'nn':NN, 
                   'nnBagged':toolz.partial(StratifiedBaggingClassifier,
                                            base_estimator=NN(**hyperparams['nn']['constructor']),
                                            fit_params=hyperparams['nn']['fit']),
                   'xgbBagged':toolz.partial(StratifiedBaggingClassifier,
                                             base_estimator=XGBClassifier(**hyperparams['xgb']['constructor']),
                                             fit_params=hyperparams['xgb']['fit']),
-                  'xgb':toolz.partial(XGBClassifier),
-                  'xgbHist':toolz.partial(XGBoost),
-                  'xgbStratified':toolz.partial(XGBoost, stratify=True),
+                  'xgb':XGBClassifier,
+                  'xgbHist':XGBoostWrapper,
                   'svm':toolz.partial(svm.SVC, probability=True),
                   'randomForest':toolz.partial(RandomForestClassifier),
                   'logisticRegression':toolz.partial(LogisticRegression, class_weight='balanced'),
@@ -58,32 +58,32 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
                                             fit_params=hyperparams['logisticRegression']['fit'])}
 
     if fit_hyperparams:
-        # Define model.
-        print('Define model...')
-        # Define model with only non-tuning parameters, as tuning parameters will
-        # be adjusted in GridSearchCV.
-        constructor_hyperparams = hyperparams[model_name]['constructor']
-        tuning_hyperparams = hyperparams[model_name]['tuning_hyperparams']
-        non_tuning_hyperparams = {x:constructor_hyperparams[x] for x in constructor_hyperparams if not x in tuning_hyperparams}
-        model = model_dict[model_name](**non_tuning_hyperparams)
-
         print('Finding hyperparameters...')
-        n_splits = 2
         # Construct distributions from tuning_hyperparams.
         param_dists = {}
+        tuning_hyperparams = hyperparams[model_name]['tuning_hyperparams']
+        constructor_hyperparams = hyperparams[model_name]['constructor']
+        nontuning_hyperparams = {x:constructor_hyperparams[x] for x in constructor_hyperparams if x not in tuning_hyperparams}
         for param in tuning_hyperparams:
             vals = tuning_hyperparams[param]['vals']
-            min = np.min(vals)
-            max = np.max(vals)
-            print("For param " + param + ", fitting over range: " + str(min) + ", " + str(max))
             if tuning_hyperparams[param]['type'] == 'int':
+                min = np.min(vals)
+                max = np.max(vals)
                 param_dists[param] = randint(min, max + 1) # randint is like [min, max).
             elif tuning_hyperparams[param]['type'] == 'float':
+                min = np.min(vals)
+                max = np.max(vals)
                 param_dists[param] = uniform(loc=min, scale=(max - min))
+            elif tuning_hyperparams[param]['type'] == 'string':
+                param_dists[param] = vals
             else:
                 raise ValueError("Unexpected tuning parameter type: " + str(tuning_hyperparams[param]['type']))
-        clf = RandomizedSearchCV(model, param_distributions=param_dists,
-                                    n_iter=10, scoring='roc_auc', verbose=5, n_jobs=3, cv=n_splits)
+        clf = RandomizedSearchCV(model_dict[model_name](**nontuning_hyperparams),
+                                 param_distributions=param_dists,
+                                 n_iter=config['tuning']['n_iter'],
+                                 n_jobs=config['tuning']['n_jobs'],
+                                 cv=config['tuning']['n_splits'],
+                                 scoring='roc_auc', verbose=5)
         X = train_df.drop(['target', 'fold'], axis=1)
         y = train_df.loc[:, 'target']
         clf.fit(X=X, y=y, **hyperparams[model_name]['fit'])
@@ -167,7 +167,7 @@ def main(config_file, model_name, fit_hyperparams, fold, submission, cv):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Fit model.')
     parser.add_argument('config', help='name of config file')
-    parser.add_argument('model', choices=['nn', 'nnBagged', 'xgb', 'xgbStratified', 'xgbBagged', 'svm', 'logisticRegression', 'logisticRegressionBagged', 'xgbHist', 'randomForest'], help='model to fit')
+    parser.add_argument('model', choices=['test', 'nn', 'nnBagged', 'xgb', 'xgbBagged', 'svm', 'logisticRegression', 'logisticRegressionBagged', 'xgbHist', 'randomForest'], help='model to fit')
     parser.add_argument('--hyperparams', action='store_true', help='fit hyperparameters instead of training model')
     parser.add_argument('--cv', action='store_true', help='cross-validate file and estimate accuracy')
     g = parser.add_mutually_exclusive_group(required=False)

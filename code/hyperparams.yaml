@@ -46,7 +46,7 @@ xgb:
     max_delta_step: 10
     max_depth: 4
     min_child_weight: 3
-    objective: binary:logistic
+    objective: "binary:logistic"
     reg_alpha: 0
     reg_lambda: 1
     seed: 4
@@ -89,7 +89,7 @@ xgbBagged:
 xgbHist:
   constructor: 
     tree_method: gpu_hist
-    eta: 0.3
+    learning_rate: 0.3
     min_child_weight: 1
     max_depth: 6
     max_leaf_nodes: 4
@@ -98,8 +98,8 @@ xgbHist:
     subsample: 1
     colsample_bytree: 1
     colsample_bylevel: 1
-    alpha: 0
-    lambda: 1
+    reg_alpha: 0
+    reg_lambda: 1
   fit: {}
   tuning_hyperparams:
     gamma:
@@ -111,7 +111,7 @@ xgbHist:
       type: float
       vals:
       - 0.05
-      - 0.15
+      - 0.25
     max_depth:
       type: int
       vals:
