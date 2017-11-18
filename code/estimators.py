@@ -98,8 +98,9 @@ class NN(BaseEstimator, ClassifierMixin):
             if not self.dropout is None:
                 self.model.add(keras.layers.Dropout(self.dropout))
         self.model.add(keras.layers.Dense(1, activation='sigmoid'))
+        sgd = keras.optimizers.SGD(lr=0.001, momentum=0.85)
         self.model.compile(loss='binary_crossentropy',
-                           optimizer='sgd',
+                           optimizer=sgd,
                            metrics=['accuracy'])
         
         # Construct NN.

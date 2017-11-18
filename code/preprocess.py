@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from utils import target_encode
+from sklearn.model_selection import StratifiedKFold
 
 
 with open('config.yaml', 'r') as f:
@@ -33,8 +34,11 @@ if not dummy_only:
     print("Loading test...")
     test = pd.read_csv(config['test_original'])
 
-    # fold: close-to-equal numbers of each fold, in random order.
-    fold_vals = np.random.permutation(list(toolz.take(n_rows, itertools.cycle(range(config['n_folds'])))))
+    # Allocate folds.
+    kd = StratifiedKFold(n_splits=config['n_folds'])
+    fold_vals = np.empty([len(train), 1])
+    for i_fold, (train_index, test_index) in enumerate(kf.split(train)):
+        fold_vals[test_index] = i_fold
 
     # Replace categorical variables with target_encode versions.
     print("Replacing categorical variables with target_encode versions...")

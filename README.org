@@ -4,7 +4,11 @@
 
 *** xgboost
 
-As of 2017/11/16, this needs to be built from source.
+As of 2017/11/16, this needs to be built from source to be able to use tree_method 'hist' option.
+
+*** LightGBM
+
+I had to build this from source to be able to use it on Ubuntu 16.04 with a GPU.
 
 *** Other Python packages
 
@@ -24,7 +28,7 @@ Dummy data only:
 ~python preprocess.py --dummy~
 
 *** Fit models
-Models are: xgb, xgbHist, xgbBagged, nn, nnBagged, svm, logisticRegression, logisticRegressionBagged, randomForest
+Models are: xgb, xgbHist, xgbBagged, lgbm, nn, nnBagged, svm, logisticRegression, logisticRegressionBagged, randomForest
 
 Folds are: 0, ..., 4
 
@@ -42,7 +46,7 @@ Check score under cross-validation:
 
 Train each model for each fold.
 
-~python train.py config.yaml MODEL --fold FOLD~
+~python train.py config.yaml MODEL --fold 0 1 2 3 4~
 
 In one call to train.py, you can specify --hyperparams, --cv and one of --sub or --fold. Hyperparameter fitting always happens first, then score checking with cross-validation, then fitting for a submission file or to folds.
 

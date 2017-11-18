@@ -2,6 +2,34 @@ lasso:
   constructor: {}
   fit: {}
   tuning_hyperparams: {}
+lgbm:
+  constructor:
+    learning_rate: 0.21192742822875466
+    min_child_weight: 5
+    n_estimators: 20
+    num_leaves: 53
+  fit: {}
+  tuning_hyperparams:
+    learning_rate:
+      type: float
+      vals:
+      - 0.05
+      - 0.3
+    min_child_weight:
+      type: int
+      vals:
+      - 1
+      - 7
+    n_estimators:
+      type: int
+      vals:
+      - 10
+      - 30
+    num_leaves:
+      type: int
+      vals:
+      - 10
+      - 100
 logisticRegression:
   constructor:
     C: 0.21808262011647106
@@ -19,16 +47,21 @@ logisticRegressionBagged:
   tuning_hyperparams: {}
 nn:
   constructor:
-    batch_size: 10000
-    dropout: -1
-    epochs: 1000
+    batch_size: 200
+    dropout: 0
+    epochs: 100
     hidden_layers:
-    - 32
+    - 64
+    - 64
   fit: {}
   tuning_hyperparams: {}
 nnBagged:
   constructor:
     n_estimators: 5
+  fit: {}
+  tuning_hyperparams: {}
+randomForest:
+  constructor: {}
   fit: {}
   tuning_hyperparams: {}
 svm:
@@ -46,7 +79,7 @@ xgb:
     max_delta_step: 10
     max_depth: 4
     min_child_weight: 3
-    objective: "binary:logistic"
+    objective: binary:logistic
     reg_alpha: 0
     reg_lambda: 1
     seed: 4
@@ -87,19 +120,19 @@ xgbBagged:
       - 5
       - 10
 xgbHist:
-  constructor: 
-    tree_method: gpu_hist
-    learning_rate: 0.3
-    min_child_weight: 1
-    max_depth: 6
-    max_leaf_nodes: 4
-    gamma: 0
+  constructor:
+    colsample_bylevel: 0.9
+    colsample_bytree: 0.8
+    gamma: 0.3557179036025354
+    learning_rate: 0.18467506873989986
     max_delta_step: 0
-    subsample: 1
-    colsample_bytree: 1
-    colsample_bylevel: 1
+    max_depth: 5
+    max_leaf_nodes: 160
+    min_child_weight: 12
     reg_alpha: 0
     reg_lambda: 1
+    subsample: 0.9
+    tree_method: hist
   fit: {}
   tuning_hyperparams:
     gamma:
@@ -116,13 +149,14 @@ xgbHist:
       type: int
       vals:
       - 1
-      - 30
+      - 15
+    max_leaf_nodes:
+      type: int
+      vals:
+      - 1
+      - 200
     min_child_weight:
       type: int
       vals:
       - 1
       - 30
-randomForest:
-  constructor: {}
-  fit: {}
-  tuning_hyperparams: {}
