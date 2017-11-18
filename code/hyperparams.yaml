@@ -4,11 +4,12 @@ lasso:
   tuning_hyperparams: {}
 lgbm:
   constructor:
-    learning_rate: 0.21192742822875466
+    learning_rate: 0.20485960115223173
     min_child_weight: 5
-    n_estimators: 20
-    num_leaves: 53
-  fit: {}
+    n_estimators: 27
+    num_leaves: 30
+  fit:
+    eval_metric: auc
   tuning_hyperparams:
     learning_rate:
       type: float

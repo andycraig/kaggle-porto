@@ -16,9 +16,12 @@ def main(config_file):
     # Fit stacking model from model columns.
     model_cols = [x for x in test_df.columns if x.startswith('model_')]
     S = LogisticRegression()
-    S.fit(X=train_df.loc[:,model_cols], y=train_df['target'].values)
+    X = train_df.loc[:,model_cols]
+    print(train_df.columns)
+    y = train_df.loc[:, 'target']
+    S.fit(X=X, y=y)
     # Make predictions based on model columns of test set.
-    test_df.loc[:, 'invasive'] = S.predict_proba(X=test_df.loc[:,model_cols])[:,1]
+    test_df.loc[:, 'target'] = S.predict_proba(X=test_df.loc[:,model_cols])[:,1]
     # Write these predictions to submit file.
     submit_file = config['submit_prefix'] + '_stack_' + datetime_for_filename() + '.csv'
     test_df[['id', 'target']].to_csv(submit_file)

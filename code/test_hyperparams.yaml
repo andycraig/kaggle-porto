@@ -2,6 +2,35 @@ lasso:
   constructor: {}
   fit: {}
   tuning_hyperparams: {}
+lgbm:
+  constructor:
+    learning_rate: 0.17273252829901703
+    min_child_weight: 4
+    n_estimators: 10
+    num_leaves: 79
+  fit:
+    eval_metric: auc
+  tuning_hyperparams:
+    learning_rate:
+      type: float
+      vals:
+      - 0.05
+      - 0.3
+    min_child_weight:
+      type: int
+      vals:
+      - 1
+      - 7
+    n_estimators:
+      type: int
+      vals:
+      - 10
+      - 30
+    num_leaves:
+      type: int
+      vals:
+      - 10
+      - 100
 logisticRegression:
   constructor: {}
   fit: {}
