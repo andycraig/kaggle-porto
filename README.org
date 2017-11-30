@@ -1,5 +1,14 @@
-* Kaggle Porto Sugero competition 
+* Kaggle Porto Seguro competition 
+My entry for the [[https://www.kaggle.com/c/porto-seguro-safe-driver-prediction][Kaggle Porto Seguro Safe Driver Prediction competition]], for which I had to predict whether or not an individual would make a car insurance claim. My final entries were:
 
+- A stacked ensemble of gradient boosted trees (xgboost version, and LightGBM version), and
+- A single gradient boosted tree (xgboost version).
+
+Both performed equally well on the public leaderboard. I tried a number of other models, including a neural network implemented in keras, but none performed well enough to justify adding them to the ensemble.
+
+This was an interesting competition because of the very low number of positives (people who made an insurance claim), and the close overlap in feature space between positives and negatives (nicely visualised using t-SNE by XXX). There were many categorical variables with high cardinality; I handled these using target encoding, /a la/ [[https://kaggle2.blob.core.windows.net/forum-message-attachments/225952/7441/high%20cardinality%20categoricals.pdf][Daniele Micci-Barreca's paper]], as implemented by XXX. I also used [[https://www.kaggle.com/cpmpml/extremely-fast-gini-computation][code to compute the normalised Gini coefficient]] written by Kaggle user [[https://www.kaggle.com/cpmpml][cpmpml.]]
+    
+Given more time, I would particularly have liked to spend more time improving the neural network.
 ** Requirements
 
 *** xgboost
@@ -12,11 +21,11 @@ I had to build this from source to be able to use it on Ubuntu 16.04 with a GPU.
 
 *** Other Python packages
 
-Other Python package requirements are in code/requirements.txt.
+Other Python package requirements are in ~code/requirements.txt~.
 
 ** Use
 
-All commands should be performed in code/.
+All commands should be performed in ~code/~.
 
 *** Preprocess
 Centre and scale data, set up stacking folds and create dummy data for testing.
@@ -44,11 +53,15 @@ Check score under cross-validation:
 
 ~python train.py config.yaml MODEL --cv~
 
-Train each model for each fold.
+Train each model for each fold, for stacking.
 
 ~python train.py config.yaml MODEL --fold 0 1 2 3 4~
 
-In one call to train.py, you can specify --hyperparams, --cv and one of --sub or --fold. Hyperparameter fitting always happens first, then score checking with cross-validation, then fitting for a submission file or to folds.
+Train model on all data, for stacking.
+
+~python train.py config.yaml MODEL --fold -1~
+
+In one call to train.py, you can specify ~--hyperparams~, ~--cv~ and one of ~--sub~ or ~--fold~. Hyperparameter fitting always happens first, then score checking with cross-validation, then fitting for a submission file or to folds.
 
 *** Stack
 ~python stack.py config.yaml~

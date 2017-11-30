@@ -35,9 +35,9 @@ if not dummy_only:
     test = pd.read_csv(config['test_original'])
 
     # Allocate folds.
-    kd = StratifiedKFold(n_splits=config['n_folds'])
+    kf = StratifiedKFold(n_splits=config['n_folds'])
     fold_vals = np.empty([len(train), 1])
-    for i_fold, (train_index, test_index) in enumerate(kf.split(train)):
+    for i_fold, (train_index, test_index) in enumerate(kf.split(train, train['target'])):
         fold_vals[test_index] = i_fold
 
     # Replace categorical variables with target_encode versions.

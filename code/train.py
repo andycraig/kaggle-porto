@@ -49,6 +49,9 @@ def main(config_file, model_name, fit_hyperparams, folds, submission, cv):
                   'xgbBagged':toolz.partial(StratifiedBaggingClassifier,
                                             base_estimator=XGBClassifier(**hyperparams['xgb']['constructor']),
                                             fit_params=hyperparams['xgb']['fit']),
+                  'lgbmBagged':toolz.partial(StratifiedBaggingClassifier,
+                                             base_estimator=LGBMClassifier(**hyperparams['lgbm']['constructor']),
+                                             fit_params=hyperparams['lgbm']['fit']),
                   'lgbm':LGBMClassifier,
                   'xgb':XGBClassifier,
                   'xgbHist':XGBoostWrapper,
@@ -150,13 +153,13 @@ def main(config_file, model_name, fit_hyperparams, folds, submission, cv):
             print("Fitting for fold " + str(fold) + "...")
             if fold != -1: # Fit for a specific fold.
                 print('Fitting...')
-                non_target_columns = [x for x in train_df.columns if x != 'target']
-                model.fit(X=train_df.loc[train_df['fold'] != fold, non_target_columns], 
+                train_columns = list(set(train_df.columns) - set(['fold', 'target']) - set([x for x in train_df.columns if x.startswith('model_')]))
+                model.fit(X=train_df.loc[train_df['fold'] != fold, train_columns], 
                           y=train_df.loc[train_df['fold'] != fold, 'target'],
                         **(hyperparams[model_name]['fit']))
                 # Add predictions for fold.
                 print("Predicting...")
-                train_df.loc[train_df['fold'] == fold, model_col_name] = model.predict_proba(train_df.loc[train_df['fold'] == fold, non_target_columns])[:,1]
+                train_df.loc[train_df['fold'] == fold, model_col_name] = model.predict_proba(train_df.loc[train_df['fold'] == fold, train_columns])[:,1]
                 train_df.to_pickle(config['train'])
                 print('Added predictions for model ' + model_name + ', fold ' + str(fold) + ' to column ' + model_col_name + ' of ' +  config['train'])
             else: # Ignore folds and fit all data.
@@ -176,7 +179,7 @@ def main(config_file, model_name, fit_hyperparams, folds, submission, cv):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Fit model.')
     parser.add_argument('config', help='name of config file')
-    parser.add_argument('model', choices=['test', 'lgbm', 'nn', 'nnBagged', 'xgb', 'xgbBagged', 'svm', 'logisticRegression', 'logisticRegressionBagged', 'xgbHist', 'randomForest'], help='model to fit')
+    parser.add_argument('model', choices=['test', 'lgbm', 'lgbmBagged', 'nn', 'nnBagged', 'xgb', 'xgbBagged', 'svm', 'logisticRegression', 'logisticRegressionBagged', 'xgbHist', 'randomForest'], help='model to fit')
     parser.add_argument('--hyperparams', action='store_true', help='fit hyperparameters instead of training model')
     parser.add_argument('--cv', action='store_true', help='cross-validate file and estimate accuracy')
     g = parser.add_mutually_exclusive_group(required=False)

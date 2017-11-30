@@ -161,3 +161,14 @@ xgbHist:
       vals:
       - 1
       - 30
+lgbmBagged:
+  constructor:
+    n_estimators: 5
+  fit: {}
+  tuning_hyperparams:
+    n_estimators:
+      type: int
+      vals:
+      - 5
+      - 10
+
