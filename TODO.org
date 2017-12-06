@@ -1,3 +1,4 @@
+* TODO Refactor fold training code. :misc:
 * DONE Add tuning to LightGBM.                                         :lgbm:
   CLOSED: [2017-11-18 Sat 16:29]
 * TODO Find out what best predictive features are. :misc:
