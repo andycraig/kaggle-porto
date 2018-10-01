@@ -10,16 +10,17 @@ My final entries were:
 Both performed equally well on the public leaderboard. I tried a number of other models, including a neural network implemented in keras, but none performed well enough to justify adding them to the ensemble.
 
 ** Code credits
-I used target encoding code by XXX, and [[https://www.kaggle.com/cpmpml/extremely-fast-gini-computation][code to compute the normalised Gini coefficient]] written by Kaggle user [[https://www.kaggle.com/cpmpml][cpmpml]].
+I used [[https://www.kaggle.com/ogrellier/python-target-encoding-for-categorical-features][target encoding code]] written by Kaggle user [[https://www.kaggle.com/ogrellier][olivier]], and [[https://www.kaggle.com/cpmpml/extremely-fast-gini-computation][code to compute the normalised Gini coefficient]] written by Kaggle user [[https://www.kaggle.com/cpmpml][cpmpml]].
    
 ** Take-aways 
-This was an interesting competition because of the very low number of positives (people who made an insurance claim), and the close overlap in feature space between positives and negatives (nicely visualised using t-SNE by XXX), and the large number of categorical variables with high cardinality; I handled these using target encoding /a la/ [[https://kaggle2.blob.core.windows.net/forum-message-attachments/225952/7441/high%20cardinality%20categoricals.pdf][Daniele Micci-Barreca's paper]].
+This was an interesting competition because of the very low number of positives (people who made an insurance claim), and the close overlap in feature space between positives and negatives (nicely [[https://www.kaggle.com/tilii7/dimensionality-reduction-pca-tsne][visualised using t-SNE]] by Kaggle user [[https://www.kaggle.com/tilii7][Tilii]]), and the large number of categorical variables with high cardinality; I handled these using target encoding /a la/ [[https://kaggle2.blob.core.windows.net/forum-message-attachments/225952/7441/high%20cardinality%20categoricals.pdf][Daniele Micci-Barreca's paper]].
 
 After the competition ended, I realised I should have been monitoring performance on a validation set while training my models, and that not doing so almost certainly led to over-fitting. Comparing the cross-validated score of an xgboost model without monitoring to the same model with monitoring (code: ~train_with_validation_set.py~), the mean normalised Gini score (the metric for this competition) increased from 0.277 to 0.280. This was better than any of the models I used in the competition, so even without any further tuning or ensembling I probably could have improved my leaderboard score by quite a lot - that's a mistake I won't make again!
 
 Given more time, I would particularly have liked to have worked more on improving the neural network. Several of the top entries used neural network models to great effect, and all used a more sophisticated encoding approach than I was. This was a useful lesson for me and I will be reading up on these. 
 
-Perhaps the biggest lesson from this competition came in reading about the solutions of the top competitors: there were a large range of successful approaches, including neural networks and gradient boosting trees but also, e.g., logistic regression (with lots of feature engineering). Competitors using the same algorithm used quite different approaches too. It was clear that there were a wide variety of methods that could be used to approach this problem, with success strongly depending on (in my opinion) flexibility of models and careful cross-validation. This seems to be consisent with a recent theorem from XXX.
+Perhaps the biggest lesson from this competition came in reading about the solutions of the top competitors: there were a large range of successful approaches, including neural networks and gradient boosting trees but also, e.g., logistic regression (with lots of feature engineering). Competitors using the same algorithm used quite different approaches too. It was clear that there were a wide variety of methods that could be used to approach this problem, with success strongly depending on (in my opinion) flexibility of models and careful cross-validation.
+
 ** Requirements
 
 *** xgboost
